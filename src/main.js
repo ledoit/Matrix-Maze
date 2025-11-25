@@ -159,7 +159,29 @@ function displayFrame(frame) {
 }
 
 // Keyboard event handlers - listen on window to catch all keys
-window.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', async (e) => {
+    // Check if game is won and space is pressed for restart
+    if (e.key === ' ' || e.key === 'Spacebar') {
+        try {
+            let gameStateObj = null;
+            try {
+                gameStateObj = JSON.parse(gameState);
+            } catch (err) {
+                // Ignore parse errors
+            }
+            
+            if (gameStateObj && gameStateObj.has_won) {
+                // Restart the game
+                gameState = await invoke('restart_game');
+                console.log('Game restarted');
+                e.preventDefault();
+                return;
+            }
+        } catch (error) {
+            console.error('Failed to restart game:', error);
+        }
+    }
+    
     switch (e.key.toLowerCase()) {
         case 'w':
             keys.w = true;

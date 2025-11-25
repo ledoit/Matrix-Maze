@@ -30,9 +30,15 @@ fn render_frame(state_json: String, width: usize, height: usize) -> (String, Str
     (frame, serde_json::to_string(&game_state).unwrap())
 }
 
+#[tauri::command]
+fn restart_game() -> String {
+    let game_state = GameState::new();
+    serde_json::to_string(&game_state).unwrap()
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![init_game, update_game, render_frame])
+        .invoke_handler(tauri::generate_handler![init_game, update_game, render_frame, restart_game])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

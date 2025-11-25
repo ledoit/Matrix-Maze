@@ -11,6 +11,8 @@ pub struct GameState {
     pub exit_x: f64,
     pub exit_y: f64,
     pub has_won: bool,
+    pub start_time: f64, // Time when game started (seconds since epoch)
+    pub completion_time: Option<f64>, // Time when player won (seconds elapsed)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -64,10 +66,39 @@ impl GameState {
         // Save maze map to file
         Self::save_maze_map(&maze, start, end);
         
-        // Calculate initial angle to face towards the exit (or an open direction)
-        let dx = exit_x - 1.5;
-        let dy = exit_y - 1.5;
-        let initial_angle = dy.atan2(dx); // atan2 gives angle from player to exit
+        // Calculate initial angle to face an open direction
+        // Check which directions are open from start position (1.5, 1.5)
+        // Start is at cell (1, 1), so check adjacent cells
+        let mut initial_angle = 0.0;
+        
+        // Check if east (right) is open - check cell (2, 1)
+        if !maze.is_wall(2, 1) {
+            initial_angle = 0.0; // Face east (right)
+        }
+        // Check if south (down) is open - check cell (1, 2)
+        else if !maze.is_wall(1, 2) {
+            initial_angle = std::f64::consts::PI / 2.0; // Face south (down)
+        }
+        // Check if west (left) is open - check cell (0, 1)
+        else if !maze.is_wall(0, 1) {
+            initial_angle = std::f64::consts::PI; // Face west (left)
+        }
+        // Check if north (up) is open - check cell (1, 0)
+        else if !maze.is_wall(1, 0) {
+            initial_angle = -std::f64::consts::PI / 2.0; // Face north (up)
+        }
+        // Default: face towards exit
+        else {
+            let dx = exit_x - 1.5;
+            let dy = exit_y - 1.5;
+            initial_angle = dy.atan2(dx);
+        }
+        
+        // Get current time in seconds
+        let start_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs_f64();
         
         GameState {
             player_x: 1.5,
@@ -77,6 +108,8 @@ impl GameState {
             exit_x,
             exit_y,
             has_won: false,
+            start_time,
+            completion_time: None,
         }
     }
     
@@ -192,6 +225,13 @@ impl GameState {
             let dy_to_exit = self.exit_y - self.player_y;
             self.player_x = self.exit_x - dx_to_exit * 0.1; // Stop just before exit
             self.player_y = self.exit_y - dy_to_exit * 0.1;
+            
+            // Record completion time
+            let current_time = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs_f64();
+            self.completion_time = Some(current_time - self.start_time);
         }
     }
 
@@ -308,16 +348,39 @@ impl GameState {
         if self.has_won {
             let message = "YOU ESCAPED!";
             let message_row = height / 2;
-            let start_col = width.saturating_sub(message.len()) / 2;
+            let time_row = height / 2 + 2;
+            
+            // Format completion time
+            let time_message = if let Some(time) = self.completion_time {
+                let minutes = (time as u64) / 60;
+                let seconds = (time as u64) % 60;
+                let milliseconds = ((time % 1.0) * 100.0) as u64;
+                format!("Time: {:02}:{:02}.{:02}", minutes, seconds, milliseconds)
+            } else {
+                "Time: --:--".to_string()
+            };
+            
+            let message_start_col = width.saturating_sub(message.len()) / 2;
+            let time_start_col = width.saturating_sub(time_message.len()) / 2;
             
             let lines: Vec<&str> = frame.split('\n').collect();
             let mut new_frame = String::new();
             for (row_idx, line) in lines.iter().enumerate() {
                 if row_idx == message_row {
+                    // Overlay "YOU ESCAPED!" message
                     let mut new_line = line.chars().collect::<Vec<_>>();
                     for (i, ch) in message.chars().enumerate() {
-                        if start_col + i < new_line.len() {
-                            new_line[start_col + i] = ch;
+                        if message_start_col + i < new_line.len() {
+                            new_line[message_start_col + i] = ch;
+                        }
+                    }
+                    new_frame.push_str(&new_line.iter().collect::<String>());
+                } else if row_idx == time_row {
+                    // Overlay time message
+                    let mut new_line = line.chars().collect::<Vec<_>>();
+                    for (i, ch) in time_message.chars().enumerate() {
+                        if time_start_col + i < new_line.len() {
+                            new_line[time_start_col + i] = ch;
                         }
                     }
                     new_frame.push_str(&new_line.iter().collect::<String>());
