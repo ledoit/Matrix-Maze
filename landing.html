@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Maze - 3D ASCII Labyrinth Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Matrix rain effect background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 15px 20px;
+            border-bottom: 2px solid #00ff00;
+            flex-shrink: 0;
+        }
+
+
+        h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            margin: 5px 0;
+            letter-spacing: 5px;
+        }
+
+        .tagline {
+            font-size: 1em;
+            color: #00cc00;
+            margin-top: 5px;
+        }
+
+        /* ASCII Art */
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            font-size: 0.4em;
+            line-height: 1;
+            color: #00ff00;
+            text-align: center;
+            margin: 10px 0;
+            white-space: pre;
+        }
+
+        /* Main content area */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            flex: 1;
+            padding: 10px 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Sections */
+        section {
+            padding: 15px;
+            border: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: auto;
+            min-height: 0;
+        }
+
+        h2 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 0 0 5px #00ff00;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 4px;
+        }
+
+        /* Controls */
+        .controls {
+            background: rgba(0, 255, 0, 0.05);
+            padding: 10px;
+            margin: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .controls h3 {
+            margin-bottom: 8px;
+            margin-top: 8px;
+            color: #00ff00;
+            font-size: 0.95em;
+        }
+
+        .controls h3:first-child {
+            margin-top: 0;
+        }
+
+        .controls ul {
+            list-style: none;
+            padding-left: 12px;
+            font-size: 0.85em;
+            margin: 0 0 15px 0;
+        }
+
+        .controls li {
+            margin: 5px 0;
+            color: #00cc00;
+        }
+
+        .controls kbd {
+            background: rgba(0, 255, 0, 0.2);
+            padding: 2px 6px;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        /* Download Section */
+        #download {
+            justify-content: flex-start;
+        }
+
+        #download > p:first-of-type {
+            margin-bottom: 12px;
+            margin-top: 0;
+        }
+
+        .downloads {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 0;
+            flex: 1;
+        }
+
+        .download-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 8px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex: 1;
+        }
+
+        .download-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn .platform {
+            display: block;
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .download-btn .size {
+            font-size: 0.7em;
+            color: #00cc00;
+        }
+
+        .coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 8px 20px;
+            border-top: 2px solid #00ff00;
+            color: #00cc00;
+            flex-shrink: 0;
+        }
+
+        .github-link {
+            color: #00ff00;
+            text-decoration: none;
+            margin-top: 5px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid #00ff00;
+            transition: all 0.3s;
+            font-size: 0.85em;
+        }
+
+        .github-link:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .downloads {
+                flex-direction: column;
+            }
+
+        }
+
+        @media (max-height: 700px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .tagline {
+                font-size: 0.8em;
+            }
+
+            section {
+                padding: 8px;
+            }
+
+            h2 {
+                font-size: 1em;
+                margin-bottom: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+
+    <div class="container">
+        <header>
+            <div class="ascii-art">
+    ███╗   ███╗ █████╗ ████████╗██████╗ ██╗██╗  ██╗    ███╗   ███╗ █████╗ ███████╗███████╗
+    ████╗ ████║██╔══██╗╚══██╔══╝██╔══██╗██║╚██╗██╔╝    ████╗ ████║██╔══██╗╚══███╔╝██╔════╝
+    ██╔████╔██║███████║   ██║   ██████╔╝██║ ╚███╔╝     ██╔████╔██║███████║  ███╔╝ ███████╗
+    ██║╚██╔╝██║██╔══██║   ██║   ██╔══██╗██║ ██╔██╗     ██║╚██╔╝██║██╔══██║ ███╔╝  ██╔════╝
+    ██║ ╚═╝ ██║██║  ██║   ██║   ██║  ██║██║██╔╝ ██╗    ██║ ╚═╝ ██║██║  ██║███████╗███████╗
+    ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝
+            </div>
+            <h1>MATRIX MAZE</h1>
+            <p class="tagline">Navigate the labyrinth, escape the Matrix.</p>
+        </header>
+
+        <div class="main-content">
+            <section id="controls">
+                <h2>Controls</h2>
+                <div class="controls">
+                    <h3>Movement</h3>
+                    <ul>
+                        <li><kbd>W</kbd> - Move forward</li>
+                        <li><kbd>S</kbd> - Move backward</li>
+                        <li><kbd>A</kbd> - Strafe left</li>
+                        <li><kbd>D</kbd> - Strafe right</li>
+                    </ul>
+                    <h3>Rotation</h3>
+                    <ul>
+                        <li><kbd>Q</kbd> - Turn left</li>
+                        <li><kbd>E</kbd> - Turn right</li>
+                    </ul>
+                    <h3>Game</h3>
+                    <ul>
+                        <li><kbd>SPACE</kbd> - Restart after winning</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="download">
+                <h2>Download</h2>
+                <p style="text-align: center; margin-bottom: 10px; color: #00cc00; font-size: 0.85em;">
+                    Choose your platform:
+                </p>
+                <div class="downloads">
+                    <a href="#" class="download-btn coming-soon" title="Coming soon">
+                        <span class="platform">🪟 Windows</span>
+                        <span class="size">Coming Soon</span>
+                    </a>
+                    <a href="#" class="download-btn coming-soon" title="Coming soon">
+                        <span class="platform">🍎 macOS</span>
+                        <span class="size">Coming Soon</span>
+                    </a>
+                    <a href="#" class="download-btn coming-soon" title="Coming soon">
+                        <span class="platform">🐧 Linux</span>
+                        <span class="size">Coming Soon</span>
+                    </a>
+                </div>
+                <p style="text-align: center; margin-top: 12px; margin-bottom: 0; color: #00cc00; font-size: 0.75em;">
+                    <em>Build from source: <code>npm run tauri build</code></em>
+                </p>
+            </section>
+        </div>
+
+        <footer>
+            <p>Matrix Maze - Open Source Game</p>
+            <a href="https://github.com/ledoit/Matrix-Maze" class="github-link" target="_blank">
+                View on GitHub
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        // Simple matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            canvas.id = 'matrixCanvas';
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.zIndex = '-1';
+            canvas.style.opacity = '0.1';
+            canvas.style.pointerEvents = 'none';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            // Ensure canvas covers full viewport
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Set canvas to cover full area
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            const fontSize = 14;
+            const columns = Math.ceil(canvas.width / fontSize);
+            const drops = [];
+
+            for (let x = 0; x < columns; x++) {
+                drops[x] = Math.random() * canvas.height / fontSize;
+            }
+
+            function draw() {
+                // Clear with fully transparent overlay to maintain brightness
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#00ff00';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    const x = i * fontSize;
+                    const y = drops[i] * fontSize;
+                    ctx.fillText(text, x, y);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 33);
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                canvas.style.width = '100vw';
+                canvas.style.height = '100vh';
+                // Recalculate columns
+                const newColumns = Math.ceil(canvas.width / fontSize);
+                while (drops.length < newColumns) {
+                    drops.push(Math.random() * canvas.height / fontSize);
+                }
+                drops.length = newColumns;
+            });
+        }
+
+        // Initialize
+        createMatrixRain();
+    </script>
+</body>
+</html>
