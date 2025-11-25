@@ -1,4 +1,8 @@
 use std::collections::HashSet;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+// Static counter to ensure unique seeds even on fast restarts
+static MAZE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 pub struct Maze {
     pub width: usize,
@@ -26,11 +30,26 @@ impl Maze {
         let mut stack: Vec<(usize, usize)> = Vec::new();
         let mut visited: HashSet<(usize, usize)> = HashSet::new();
         
-        // Randomly select exit position on one of the outer edges
-        let mut rng_seed = std::time::SystemTime::now()
+        // Generate a more random seed using multiple entropy sources
+        // Combine high-precision timestamp (nanoseconds) with a counter to ensure uniqueness
+        let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos() as u64;
+            .unwrap();
+        let nanos = now.as_nanos() as u64;
+        
+        // Increment counter atomically to ensure each maze gets a unique seed
+        let counter = MAZE_COUNTER.fetch_add(1, Ordering::Relaxed);
+        
+        // Combine timestamp with counter and additional entropy
+        use std::hash::{Hash, Hasher};
+        use std::collections::hash_map::DefaultHasher;
+        let mut hasher = DefaultHasher::new();
+        nanos.hash(&mut hasher);
+        counter.hash(&mut hasher);
+        std::thread::current().id().hash(&mut hasher);
+        std::process::id().hash(&mut hasher);
+        
+        let mut rng_seed = hasher.finish();
         
         // Pick a random edge (0=top, 1=right, 2=bottom, 3=left)
         rng_seed = rng_seed.wrapping_mul(1103515245).wrapping_add(12345);
