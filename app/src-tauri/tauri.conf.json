@@ -1,5 +1,4 @@
 {
-  "_comment": "Game name: 'Matrix Maze' - if changing, also update src/constants.js, Cargo.toml, package.json, and index.html",
   "productName": "Matrix Maze",
   "version": "1.0.0",
   "identifier": "com.matrixmaze.app",
