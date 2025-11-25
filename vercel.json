@@ -1,10 +1,4 @@
 {
-  "version": 2,
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/landing.html"
-    }
-  ]
+  "version": 2
 }
 
