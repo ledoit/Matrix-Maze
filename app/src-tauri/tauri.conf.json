@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "identifier": "com.matrixmaze.app",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "cd .. && npm run dev",
+    "beforeBuildCommand": "cd .. && npm run build",
     "devUrl": "http://localhost:1420"
   },
   "app": {

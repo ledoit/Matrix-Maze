@@ -48,6 +48,8 @@ npm install
 
 Run the development server:
 ```bash
+cd app
+npm install
 npm run tauri dev
 ```
 
@@ -60,27 +62,32 @@ This will:
 
 Build the application for production:
 ```bash
+cd app
 npm run tauri build
 ```
 
-The built application will be in `src-tauri/target/release/` (or `src-tauri/target/release/bundle/` for installers).
+The built application will be in `app/src-tauri/target/release/` (or `app/src-tauri/target/release/bundle/` for installers).
 
 ## Project Structure
 
 ```
 .
-├── src/                    # Frontend (HTML/CSS/JavaScript)
-│   ├── main.js            # Game loop and Tauri integration
-│   └── style.css          # Styling
-├── src-tauri/             # Rust backend
-│   ├── src/
-│   │   ├── main.rs        # Tauri entry point
-│   │   ├── game.rs        # Game state and logic
-│   │   ├── maze.rs        # Maze generation
-│   │   └── raycast.rs     # 3D raycasting engine
-│   └── Cargo.toml         # Rust dependencies
-├── index.html             # HTML entry point
-└── package.json           # Node.js dependencies
+├── index.html             # Landing page (deployed to Vercel)
+├── vercel.json            # Vercel deployment config
+├── app/                   # Game application
+│   ├── src/              # Frontend (HTML/CSS/JavaScript)
+│   │   ├── main.js       # Game loop and Tauri integration
+│   │   └── style.css     # Styling
+│   ├── src-tauri/        # Rust backend
+│   │   ├── src/
+│   │   │   ├── main.rs   # Tauri entry point
+│   │   │   ├── game.rs   # Game state and logic
+│   │   │   ├── maze.rs   # Maze generation
+│   │   │   └── raycast.rs # 3D raycasting engine
+│   │   └── Cargo.toml    # Rust dependencies
+│   ├── index.html        # Game HTML entry point
+│   └── package.json       # Node.js dependencies
+└── README.md
 ```
 
 ## How It Works
