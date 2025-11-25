@@ -67,31 +67,28 @@ impl GameState {
         // Save maze map to file
         Self::save_maze_map(&maze, start, end);
         
-        // Calculate initial angle to face an open direction
-        // Check which directions are open from start position (1.5, 1.5)
-        // Start is at cell (1, 1), so check adjacent cells
-        let mut initial_angle = 0.0;
+        // Calculate initial angle to face an open direction from start position
+        let start_x = start.0 as f64 + 0.5;
+        let start_y = start.1 as f64 + 0.5;
         
-        // Check if east (right) is open - check cell (2, 1)
-        if !maze.is_wall(2, 1) {
+        let mut initial_angle = 0.0;
+        // Check which directions are open from the random start position
+        if start.0 + 1 < maze.width && !maze.is_wall(start.0 + 1, start.1) {
             initial_angle = 0.0; // Face east (right)
         }
-        // Check if south (down) is open - check cell (1, 2)
-        else if !maze.is_wall(1, 2) {
+        else if start.1 + 1 < maze.height && !maze.is_wall(start.0, start.1 + 1) {
             initial_angle = std::f64::consts::PI / 2.0; // Face south (down)
         }
-        // Check if west (left) is open - check cell (0, 1)
-        else if !maze.is_wall(0, 1) {
+        else if start.0 > 0 && !maze.is_wall(start.0 - 1, start.1) {
             initial_angle = std::f64::consts::PI; // Face west (left)
         }
-        // Check if north (up) is open - check cell (1, 0)
-        else if !maze.is_wall(1, 0) {
+        else if start.1 > 0 && !maze.is_wall(start.0, start.1 - 1) {
             initial_angle = -std::f64::consts::PI / 2.0; // Face north (up)
         }
-        // Default: face towards exit
+        // Fallback: face towards exit
         else {
-            let dx = exit_x - 1.5;
-            let dy = exit_y - 1.5;
+            let dx = exit_x - start_x;
+            let dy = exit_y - start_y;
             initial_angle = dy.atan2(dx);
         }
         
@@ -102,8 +99,8 @@ impl GameState {
             .as_secs_f64();
         
         GameState {
-            player_x: 1.5,
-            player_y: 1.5,
+            player_x: start_x,
+            player_y: start_y,
             player_angle: initial_angle,
             maze: MazeData::from(&maze),
             exit_x,
