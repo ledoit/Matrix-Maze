@@ -125,10 +125,13 @@ function resizeViewport() {
     viewportWidth = Math.max(80, Math.min(viewportWidth, 200));
     viewportHeight = Math.max(30, Math.min(viewportHeight, 80));
     
-    viewport.style.width = `${viewportWidth * charWidth}px`;
-    viewport.style.height = `${viewportHeight * charHeight}px`;
+    // Ensure viewport is wide enough for all characters
+    // Add a small buffer to account for padding and ensure full width is visible
+    viewport.style.width = `${viewportWidth * charWidth + 20}px`; // +20 for padding
+    viewport.style.height = `${viewportHeight * charHeight + 20}px`; // +20 for padding
     viewport.style.fontSize = '12px';
     viewport.style.lineHeight = '16px';
+    viewport.style.overflow = 'visible'; // Ensure nothing is clipped
 }
 
 async function gameLoop() {

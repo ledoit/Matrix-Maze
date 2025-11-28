@@ -522,7 +522,7 @@ impl GameState {
             let art_start_row = (height.saturating_sub(art_height + 4)) / 2;
             let time_row = art_start_row + art_height + 1;
             let best_row = time_row + 1;
-            let next_row = height - 2; // Bottom, centered
+            let next_row = best_row + 3; // 2 blank lines after best (best_row + 1, +2, then next_row at +3)
             
             // Check for personal best message
             let personal_best_str = if self.new_record_level == Some(self.current_level) {
@@ -538,7 +538,14 @@ impl GameState {
             let mut new_frame = String::new();
             
             for (row_idx, line) in lines.iter().enumerate() {
-                let mut new_line = line.chars().collect::<Vec<_>>();
+                // Ensure line is exactly width characters
+                let mut new_line: Vec<char> = line.chars().take(width).collect();
+                // Pad line to exact width if needed
+                while new_line.len() < width {
+                    new_line.push(' ');
+                }
+                // Truncate if longer (shouldn't happen, but safety check)
+                new_line.truncate(width);
                 
                 // Overlay ASCII art (centered) - always show even with personal best
                 if row_idx >= art_start_row && row_idx < art_start_row + art_height {
@@ -551,8 +558,9 @@ impl GameState {
                             0
                         };
                         for (i, ch) in art_line.chars().enumerate() {
-                            if art_start_col + i < new_line.len() {
-                                new_line[art_start_col + i] = ch;
+                            let col_idx = art_start_col + i;
+                            if col_idx < width {
+                                new_line[col_idx] = ch;
                             }
                         }
                     }
@@ -561,8 +569,9 @@ impl GameState {
                 else if row_idx == time_row {
                     let time_start_col = width.saturating_sub(time_with_pb.len()) / 2;
                     for (i, ch) in time_with_pb.chars().enumerate() {
-                        if time_start_col + i < new_line.len() {
-                            new_line[time_start_col + i] = ch;
+                        let col_idx = time_start_col + i;
+                        if col_idx < width {
+                            new_line[col_idx] = ch;
                         }
                     }
                 }
@@ -570,8 +579,9 @@ impl GameState {
                 else if row_idx == best_row {
                     let best_start_col = width.saturating_sub(best_level_time_str.len()) / 2;
                     for (i, ch) in best_level_time_str.chars().enumerate() {
-                        if best_start_col + i < new_line.len() {
-                            new_line[best_start_col + i] = ch;
+                        let col_idx = best_start_col + i;
+                        if col_idx < width {
+                            new_line[col_idx] = ch;
                         }
                     }
                 }
@@ -579,8 +589,9 @@ impl GameState {
                 else if row_idx == next_row {
                     let next_start_col = width.saturating_sub(next_level_str.len()) / 2;
                     for (i, ch) in next_level_str.chars().enumerate() {
-                        if next_start_col + i < new_line.len() {
-                            new_line[next_start_col + i] = ch;
+                        let col_idx = next_start_col + i;
+                        if col_idx < width {
+                            new_line[col_idx] = ch;
                         }
                     }
                 }
@@ -726,6 +737,9 @@ impl GameState {
             String::new(), // Empty line between level 4 and total
             format!("Total: {}", total_time_str),
             format!("Best total: {}", best_total_str),
+            String::new(), // Empty line
+            String::new(), // Empty line (2 total)
+            "Press SPACE to play again".to_string(),
         ];
         
         // Calculate starting row (center vertically, accounting for ASCII art)
@@ -738,7 +752,14 @@ impl GameState {
         let mut new_frame = String::new();
         
         for (row_idx, line) in lines.iter().enumerate() {
-            let mut new_line = line.chars().collect::<Vec<_>>();
+            // Ensure line is exactly width characters
+            let mut new_line: Vec<char> = line.chars().take(width).collect();
+            // Pad line to exact width if needed
+            while new_line.len() < width {
+                new_line.push(' ');
+            }
+            // Truncate if longer (shouldn't happen, but safety check)
+            new_line.truncate(width);
             
             // Overlay ASCII art (centered) - always show
             if row_idx >= art_start_row && row_idx < art_start_row + art_height {
@@ -751,8 +772,9 @@ impl GameState {
                         0
                     };
                     for (i, ch) in art_line.chars().enumerate() {
-                        if art_start_col + i < new_line.len() {
-                            new_line[art_start_col + i] = ch;
+                        let col_idx = art_start_col + i;
+                        if col_idx < width {
+                            new_line[col_idx] = ch;
                         }
                     }
                 }
@@ -766,8 +788,9 @@ impl GameState {
                     if !text.is_empty() {
                         let text_start_col = width.saturating_sub(text.len()) / 2;
                         for (i, ch) in text.chars().enumerate() {
-                            if text_start_col + i < new_line.len() {
-                                new_line[text_start_col + i] = ch;
+                            let col_idx = text_start_col + i;
+                            if col_idx < width {
+                                new_line[col_idx] = ch;
                             }
                         }
                     }
