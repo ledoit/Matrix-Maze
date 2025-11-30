@@ -1,6 +1,6 @@
 {
   "productName": "Matrix Maze",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "identifier": "com.matrixmaze.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -32,15 +32,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "windows": {
-      "webviewInstallMode": {
-        "type": "embedBootstrapper",
-        "silent": true
-      },
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    },
     "macOS": {
       "frameworks": [],
       "minimumSystemVersion": "10.13",

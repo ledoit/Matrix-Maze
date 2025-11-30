@@ -102,7 +102,7 @@ impl Maze {
         visited.insert(start);
         stack.push(start);
         self.start = start; // Store the start position
-
+        
         // Track if we've reached the exit
         let mut exit_reached = false;
         

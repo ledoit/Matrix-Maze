@@ -8,18 +8,6 @@ npm install
 npm run tauri build
 ```
 
-## Windows WebView2 Requirements
-
-The Windows installer is configured to **automatically install WebView2 Runtime** during installation. The bootstrapper is embedded in the installer and will run silently, so users don't need to install WebView2 separately.
-
-**Configuration:**
-- WebView2 bootstrapper is embedded in the installer (`embedBootstrapper` mode)
-- Installation runs silently (`silent: true`)
-- The installer will automatically check for WebView2 and install it if missing
-
-If users still encounter issues (rare), they can manually install WebView2 Runtime from:
-https://developer.microsoft.com/microsoft-edge/webview2/
-
 ## Build Outputs
 
 After building, you'll find the installers in:

@@ -336,11 +336,11 @@
                         <span class="size" id="macos-version">Loading...</span>
                     </a>
                     <a href="#" 
-                       class="download-btn" 
+                       class="download-btn coming-soon" 
                        id="download-windows"
-                       title="Download for Windows">
+                       title="Coming soon">
                         <span class="platform">🪟 Windows</span>
-                        <span class="size" id="windows-version">Loading...</span>
+                        <span class="size">Coming Soon</span>
                     </a>
                     <div style="padding: 10px; border: 1px solid #00ff00; background: rgba(0, 255, 0, 0.05); font-size: 0.75em; color: #00cc00; word-wrap: break-word; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center; flex: 1;">
                         <strong style="color: #00ff00;">macOS Users:</strong> If you see "app is damaged" after installation, right-click the app and select "Open", or run this in Terminal: <code style="display: inline; padding: 2px 6px; background: rgba(0, 0, 0, 0.3); word-break: break-all;">xattr -cr /Applications/Matrix\ Maze.app</code>
@@ -445,35 +445,19 @@
                     asset.name.includes('.dmg') && asset.name.includes('aarch64')
                 );
                 
-                // Find the Windows MSI asset
-                const windowsAsset = release.assets.find(asset => 
-                    asset.name.includes('.msi') && asset.name.includes('x64')
-                );
-                
                 if (macosAsset) {
                     const macosLink = document.getElementById('download-macos');
                     const macosVersion = document.getElementById('macos-version');
                     macosLink.href = macosAsset.browser_download_url;
                     macosVersion.textContent = `Download ${versionNum}`;
                 }
-                
-                if (windowsAsset) {
-                    const windowsLink = document.getElementById('download-windows');
-                    const windowsVersion = document.getElementById('windows-version');
-                    windowsLink.href = windowsAsset.browser_download_url;
-                    windowsVersion.textContent = `Download ${versionNum}`;
-                }
             } catch (error) {
                 console.error('Error fetching latest release:', error);
                 // Fallback to a default version if API fails
                 const macosLink = document.getElementById('download-macos');
                 const macosVersion = document.getElementById('macos-version');
-                const windowsLink = document.getElementById('download-windows');
-                const windowsVersion = document.getElementById('windows-version');
                 macosLink.href = 'https://github.com/ledoit/Matrix-Maze/releases/latest';
                 macosVersion.textContent = 'Download Latest';
-                windowsLink.href = 'https://github.com/ledoit/Matrix-Maze/releases/latest';
-                windowsVersion.textContent = 'Download Latest';
             }
         }
 

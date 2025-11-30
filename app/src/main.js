@@ -44,6 +44,8 @@ let keys = {
 };
 
 let mouseDeltaX = 0.0;
+let lastFrameTime = null;
+let spacebarDebounce = false;
 
 let viewport = null;
 let levelIndicator = null;
@@ -97,6 +99,7 @@ async function init() {
         const stateJson = await invoke('init_game');
         gameState = stateJson;
         console.log('Game initialized, state:', stateJson.substring(0, 100));
+        lastFrameTime = performance.now() / 1000.0; // Initialize frame time
         resizeViewport();
         gameLoop();
     } catch (error) {
@@ -110,13 +113,29 @@ function resizeViewport() {
     const container = document.getElementById('app');
     if (!container) return;
     
-    const availableWidth = container.clientWidth - 40;
-    const availableHeight = container.clientHeight - 100;
+    // Set font properties first to measure actual character size
+    viewport.style.fontSize = '12px';
+    viewport.style.lineHeight = '16px';
+    viewport.style.fontFamily = "'Courier New', 'Monaco', 'Menlo', monospace";
+    viewport.style.whiteSpace = 'pre';
     
-    // Calculate optimal viewport size based on available space
-    // Using a monospace font, we can estimate character size
-    const charWidth = 8; // Approximate pixel width of a character
-    const charHeight = 16; // Approximate pixel height of a character
+    // Measure actual character width by creating a test element
+    const testChar = document.createElement('span');
+    testChar.style.position = 'absolute';
+    testChar.style.visibility = 'hidden';
+    testChar.style.fontSize = '12px';
+    testChar.style.fontFamily = "'Courier New', 'Monaco', 'Menlo', monospace";
+    testChar.style.whiteSpace = 'pre';
+    testChar.textContent = 'M'; // Use 'M' as it's typically the widest character
+    document.body.appendChild(testChar);
+    const charWidth = testChar.offsetWidth;
+    const charHeight = parseInt(getComputedStyle(testChar).lineHeight) || 16;
+    document.body.removeChild(testChar);
+    
+    // Account for border (2px on each side = 4px) and padding (10px on each side = 20px)
+    const borderPadding = 4 + 20; // 24px total
+    const availableWidth = container.clientWidth - borderPadding - 40; // Extra 40 for margins
+    const availableHeight = container.clientHeight - borderPadding - 100; // Extra 100 for other elements
     
     viewportWidth = Math.floor(availableWidth / charWidth);
     viewportHeight = Math.floor(availableHeight / charHeight);
@@ -125,17 +144,30 @@ function resizeViewport() {
     viewportWidth = Math.max(80, Math.min(viewportWidth, 200));
     viewportHeight = Math.max(30, Math.min(viewportHeight, 80));
     
-    // Ensure viewport is wide enough for all characters
-    // Add a small buffer to account for padding and ensure full width is visible
-    viewport.style.width = `${viewportWidth * charWidth + 20}px`; // +20 for padding
-    viewport.style.height = `${viewportHeight * charHeight + 20}px`; // +20 for padding
-    viewport.style.fontSize = '12px';
-    viewport.style.lineHeight = '16px';
+    // Calculate content height
+    const contentHeight = viewportHeight * charHeight;
+    
+    // Don't set width here - let displayFrame measure the actual rendered width
+    // Just set height and max-width constraint
+    const exactHeight = contentHeight + 20 + 4; // padding + border
+    
+    // Set max-width to container limit to prevent overflow
+    const maxAllowedWidth = container.clientWidth - 40;
+    viewport.style.maxWidth = `${maxAllowedWidth}px`;
+    viewport.style.height = `${exactHeight}px`;
     viewport.style.overflow = 'visible'; // Ensure nothing is clipped
 }
 
 async function gameLoop() {
     if (!gameState) return;
+    
+    // Calculate delta time for frame-rate independent movement
+    const currentTime = performance.now() / 1000.0; // Convert to seconds
+    let deltaTime = 0.016; // Default to ~60fps if first frame
+    if (lastFrameTime !== null) {
+        deltaTime = currentTime - lastFrameTime;
+    }
+    lastFrameTime = currentTime;
     
     // Parse game state to check if won
     let gameStateObj = null;
@@ -154,6 +186,7 @@ async function gameLoop() {
         turn_left: gameStateObj?.has_won ? false : keys.q,
         turn_right: gameStateObj?.has_won ? false : keys.e,
         mouse_delta_x: gameStateObj?.has_won ? 0.0 : mouseDeltaX,
+        delta_time: deltaTime,
     };
     
     // Reset mouse delta after using it
@@ -196,8 +229,44 @@ async function gameLoop() {
 function displayFrame(frame) {
     if (!viewport) return;
     
-    // Use textContent - it automatically escapes HTML and preserves whitespace
-    // CSS white-space: pre will preserve newlines and spaces
+    // Measure actual rendered width of one line BEFORE setting content
+    // Extract first line to measure
+    const firstLineEnd = frame.indexOf('\n');
+    const testLine = firstLineEnd > 0 ? frame.substring(0, firstLineEnd) : (frame.split('\n')[0] || '');
+    
+    // Create test element with exact same styling as viewport
+    const testElement = document.createElement('div');
+    testElement.style.position = 'absolute';
+    testElement.style.visibility = 'hidden';
+    testElement.style.fontSize = getComputedStyle(viewport).fontSize || '12px';
+    testElement.style.fontFamily = getComputedStyle(viewport).fontFamily || "'Courier New', 'Monaco', 'Menlo', monospace";
+    testElement.style.whiteSpace = 'pre';
+    testElement.style.letterSpacing = getComputedStyle(viewport).letterSpacing || '0';
+    testElement.textContent = testLine;
+    document.body.appendChild(testElement);
+    const actualLineWidth = testElement.offsetWidth;
+    document.body.removeChild(testElement);
+    
+    // Calculate exact viewport width: actual line width + padding + border
+    const borderPadding = 24; // 4px border (2px each side) + 20px padding (10px each side)
+    const exactWidth = actualLineWidth + borderPadding;
+    
+    // Get container (#app) - the viewport should fit within this container
+    // The container uses flexbox, so we need to ensure viewport doesn't exceed its width
+    const container = document.getElementById('app');
+    if (container) {
+        // Use the container's actual client width as the maximum
+        // This ensures the viewport (including border) fits within the green box
+        const maxAllowedWidth = container.clientWidth;
+        
+        // Constrain viewport to fit within container - the exactWidth already includes border+padding
+        viewport.style.width = `${Math.min(exactWidth, maxAllowedWidth)}px`;
+        viewport.style.maxWidth = `${maxAllowedWidth}px`; // Hard CSS limit
+    } else {
+        viewport.style.width = `${exactWidth}px`;
+    }
+    
+    // Now set the frame content
     viewport.textContent = frame;
     
     // Update level indicator, viewport, and controls color class
@@ -223,6 +292,12 @@ function displayFrame(frame) {
 window.addEventListener('keydown', async (e) => {
     // Check if game is won and space is pressed for restart
     if (e.key === ' ' || e.key === 'Spacebar') {
+        // Prevent double-tap by debouncing
+        if (spacebarDebounce) {
+            e.preventDefault();
+            return;
+        }
+        
         try {
             let gameStateObj = null;
             try {
@@ -232,14 +307,24 @@ window.addEventListener('keydown', async (e) => {
             }
             
             if (gameStateObj && gameStateObj.has_won) {
+                // Set debounce flag
+                spacebarDebounce = true;
+                
                 // Advance to next level or restart
                 gameState = await invoke('next_level', { stateJson: gameState });
                 console.log('Advanced to next level or restarted');
+                
+                // Reset debounce after a short delay
+                setTimeout(() => {
+                    spacebarDebounce = false;
+                }, 300);
+                
                 e.preventDefault();
                 return;
             }
         } catch (error) {
             console.error('Failed to restart game:', error);
+            spacebarDebounce = false; // Reset on error
         }
     }
     

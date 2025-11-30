@@ -66,6 +66,7 @@ pub struct PlayerInput {
     pub turn_left: bool,
     pub turn_right: bool,
     pub mouse_delta_x: f64,
+    pub delta_time: f64, // Time elapsed since last frame in seconds
 }
 
 impl GameState {
@@ -258,8 +259,15 @@ impl GameState {
             return;
         }
         
-        let move_speed = 0.05;
-        let turn_speed = 0.10; // Doubled from 0.05
+        // Use delta time to make movement frame-rate independent
+        // Base speeds are per second, so multiply by delta_time
+        // Clamp delta_time to prevent huge jumps (e.g., if tab was inactive)
+        let delta_time = input.delta_time.min(0.1); // Cap at 100ms (10fps minimum)
+        
+        let move_speed_per_second = 3.0; // Units per second
+        let turn_speed_per_second = 6.0; // Radians per second
+        let move_speed = move_speed_per_second * delta_time;
+        let turn_speed = turn_speed_per_second * delta_time;
         let maze: Maze = self.maze.clone().into();
 
         // Handle rotation
@@ -270,7 +278,7 @@ impl GameState {
             self.player_angle += turn_speed;
         }
         // Handle mouse/trackpad turning
-        self.player_angle += input.mouse_delta_x * turn_speed * 2.0;
+        self.player_angle += input.mouse_delta_x * turn_speed_per_second * 2.0 * delta_time;
 
         // Normalize angle
         self.player_angle = self.player_angle % (2.0 * std::f64::consts::PI);
@@ -618,27 +626,27 @@ impl GameState {
                 let message = format!("LEVEL {} - FIND THE EXIT!", self.current_level);
                 let message_row = height / 2;
                 let message_start_col = width.saturating_sub(message.len()) / 2;
-                
-                let lines: Vec<&str> = frame.split('\n').collect();
-                let mut new_frame = String::new();
-                for (row_idx, line) in lines.iter().enumerate() {
-                    if row_idx == message_row {
+            
+            let lines: Vec<&str> = frame.split('\n').collect();
+            let mut new_frame = String::new();
+            for (row_idx, line) in lines.iter().enumerate() {
+                if row_idx == message_row {
                         // Overlay "FIND THE EXIT!" message
-                        let mut new_line = line.chars().collect::<Vec<_>>();
-                        for (i, ch) in message.chars().enumerate() {
-                            if message_start_col + i < new_line.len() {
-                                new_line[message_start_col + i] = ch;
-                            }
+                    let mut new_line = line.chars().collect::<Vec<_>>();
+                    for (i, ch) in message.chars().enumerate() {
+                        if message_start_col + i < new_line.len() {
+                            new_line[message_start_col + i] = ch;
                         }
-                        new_frame.push_str(&new_line.iter().collect::<String>());
-                    } else {
-                        new_frame.push_str(line);
                     }
-                    if row_idx < lines.len() - 1 {
-                        new_frame.push('\n');
-                    }
+                    new_frame.push_str(&new_line.iter().collect::<String>());
+                } else {
+                    new_frame.push_str(line);
                 }
-                return new_frame;
+                if row_idx < lines.len() - 1 {
+                    new_frame.push('\n');
+                }
+            }
+            return new_frame;
             }
         }
         

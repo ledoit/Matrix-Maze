@@ -5,7 +5,7 @@
 # - package.json (name)
 # - index.html (title)
 name = "matrix-maze"
-version = "1.2.1"
+version = "1.2.2"
 description = "Matrix Maze - 3D ASCII Labyrinth Adventure Game"
 authors = ["you"]
 license = ""

@@ -2,7 +2,7 @@
 
 A desktop application featuring a first-person 3D ASCII labyrinth adventure game built with Rust, Tauri, and JavaScript.
 
-## [Play Demo / Download](landing.html)
+## 🎮 [Play Demo / Download](landing.html)
 
 Visit the [landing page](landing.html) to see a demo and download the game for your platform.
 
