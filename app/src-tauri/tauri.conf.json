@@ -1,6 +1,6 @@
 {
   "productName": "Matrix Maze",
-  "version": "1.2.3",
+  "version": "1.2.2",
   "identifier": "com.matrixmaze.app",
   "build": {
     "beforeDevCommand": "npm run dev",

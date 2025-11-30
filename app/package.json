@@ -1,7 +1,7 @@
 {
   "_comment": "Game name: 'matrix-maze' - if changing, also update src/constants.js, Cargo.toml, tauri.conf.json, and index.html",
   "name": "matrix-maze",
-  "version": "1.2.3",
+  "version": "1.2.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
