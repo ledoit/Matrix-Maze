@@ -193,6 +193,139 @@ pub fn get_ascii_char(distance: f64, wall_type: u8, max_distance: f64) -> char {
     }
 }
 
+/// Gets an ASCII character using fractal dithering for more sophisticated rendering.
+/// 
+/// This function uses distance-based fractal dithering where:
+/// - Closer objects use finer dither patterns (8x8)
+/// - Farther objects use coarser patterns (1x1)
+/// - The pattern is sampled based on world-space hit position
+/// 
+/// # Arguments
+/// 
+/// * `distance` - Distance to the wall
+/// * `wall_type` - Type of wall (0-3 for N, S, E, W)
+/// * `max_distance` - Maximum render distance
+/// * `hit_x` - World-space X coordinate of hit point
+/// * `hit_y` - World-space Y coordinate of hit point
+/// * `dither` - Reference to the dither pattern
+/// 
+/// # Returns
+/// 
+/// An ASCII character selected based on dithered brightness
+pub fn get_dithered_ascii_char(
+    distance: f64,
+    wall_type: u8,
+    max_distance: f64,
+    hit_x: f64,
+    hit_y: f64,
+    dither: &crate::dither::DitherPattern,
+) -> char {
+    let normalized_dist = (distance / max_distance).min(1.0);
+    
+    // Calculate brightness: closer = brighter (inverse of distance)
+    let brightness = 1.0 - normalized_dist;
+    
+    // Use hit position as UV coordinates for pattern sampling
+    // Scale the coordinates to get good pattern variation
+    let uv = (hit_x * 2.0, hit_y * 2.0);
+    
+    // Apply fractal dithering
+    let dithered_brightness = dither.dither(normalized_dist, uv, brightness);
+    
+    // Map dithered brightness to ASCII character
+    // We use a smooth mapping instead of hard thresholds
+    if dithered_brightness > 0.85 {
+        match wall_type {
+            0 => '█', // North
+            1 => '█', // South
+            2 => '█', // West
+            3 => '█', // East
+            _ => '█',
+        }
+    } else if dithered_brightness > 0.65 {
+        match wall_type {
+            0 => '▓',
+            1 => '▓',
+            2 => '▓',
+            3 => '▓',
+            _ => '▓',
+        }
+    } else if dithered_brightness > 0.45 {
+        '▒'
+    } else if dithered_brightness > 0.25 {
+        '░'
+    } else {
+        '·'
+    }
+}
+
+/// Gets an ASCII character using fractal dithering with per-pixel row position.
+/// 
+/// This version includes the row position in the UV coordinates to create
+/// vertical variation and prevent vertical slicing artifacts.
+/// 
+/// # Arguments
+/// 
+/// * `distance` - Distance to the wall
+/// * `wall_type` - Type of wall (0-3 for N, S, E, W)
+/// * `max_distance` - Maximum render distance
+/// * `hit_x` - World-space X coordinate of hit point
+/// * `hit_y` - World-space Y coordinate of hit point
+/// * `row` - Screen row position (for vertical pattern variation)
+/// * `dither` - Reference to the dither pattern
+/// 
+/// # Returns
+/// 
+/// An ASCII character selected based on dithered brightness
+pub fn get_dithered_ascii_char_with_row(
+    distance: f64,
+    wall_type: u8,
+    max_distance: f64,
+    hit_x: f64,
+    hit_y: f64,
+    row: f64,
+    dither: &crate::dither::DitherPattern,
+) -> char {
+    let normalized_dist = (distance / max_distance).min(1.0);
+    
+    // Calculate brightness: closer = brighter (inverse of distance)
+    let brightness = 1.0 - normalized_dist;
+    
+    // Use hit position + row position as UV coordinates for pattern sampling
+    // This creates both horizontal and vertical variation
+    // Scale coordinates to get good pattern variation
+    let uv = (hit_x * 2.0, hit_y * 2.0 + row * 0.1);
+    
+    // Apply fractal dithering
+    let dithered_brightness = dither.dither(normalized_dist, uv, brightness);
+    
+    // Map dithered brightness to ASCII character
+    // We use a smooth mapping instead of hard thresholds
+    if dithered_brightness > 0.85 {
+        match wall_type {
+            0 => '█', // North
+            1 => '█', // South
+            2 => '█', // West
+            3 => '█', // East
+            _ => '█',
+        }
+    } else if dithered_brightness > 0.65 {
+        match wall_type {
+            0 => '▓',
+            1 => '▓',
+            2 => '▓',
+            3 => '▓',
+            _ => '▓',
+        }
+    } else if dithered_brightness > 0.45 {
+        '▒'
+    } else if dithered_brightness > 0.25 {
+        '░'
+    } else {
+        '·'
+    }
+}
+
 #[allow(dead_code)]
 pub fn get_color(distance: f64, max_distance: f64) -> u8 {
     let normalized_dist = (distance / max_distance).min(1.0);

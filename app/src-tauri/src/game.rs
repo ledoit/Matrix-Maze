@@ -1,5 +1,5 @@
 use crate::maze::Maze;
-use crate::raycast::{cast_ray, get_ascii_char};
+use crate::raycast::cast_ray;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -396,7 +396,8 @@ impl GameState {
         // Continue with normal rendering even if won - we'll overlay message at the end
         
         // Pre-calculate raycast results for each column
-        let mut column_data: Vec<(f64, u8, bool, Option<f64>)> = Vec::with_capacity(width);
+        // Store: (distance, wall_type, passed_exit, exit_threshold_dist, hit_x, hit_y)
+        let mut column_data: Vec<(f64, u8, bool, Option<f64>, f64, f64)> = Vec::with_capacity(width);
         for col in 0..width {
             let ray_angle = self.player_angle - fov / 2.0 + (col as f64 / width as f64) * fov;
             let result = cast_ray(
@@ -408,23 +409,19 @@ impl GameState {
                 Some(self.exit_x),
                 Some(self.exit_y),
             );
-            column_data.push((result.distance, result.wall_type, result.passed_exit, result.exit_threshold_dist));
+            column_data.push((result.distance, result.wall_type, result.passed_exit, result.exit_threshold_dist, result.hit_x, result.hit_y));
         }
         
         let mut frame = String::new();
         
-        // Pre-calculate wall characters for each column to ensure consistency
-        let mut wall_chars: Vec<char> = Vec::with_capacity(width);
-        for col in 0..width {
-            let (distance, wall_type, _passed_exit, _exit_threshold_dist) = &column_data[col];
-            // Only use regular distance for wall rendering (not exit threshold)
-            wall_chars.push(get_ascii_char(*distance, *wall_type, max_distance));
-        }
+        // Create dither pattern (reuse across frame for performance)
+        use crate::dither::DitherPattern;
+        let dither = DitherPattern::new();
         
         // Render row by row
         for row in 0..height {
             for col in 0..width {
-                let (distance, _wall_type, passed_exit, exit_threshold_dist) = column_data[col];
+                let (distance, wall_type, passed_exit, exit_threshold_dist, hit_x, hit_y) = column_data[col];
                 
                 // Calculate wall height based on distance (perspective projection)
                 let wall_render_dist = distance;
@@ -448,10 +445,28 @@ impl GameState {
                         if (wall_render_dist - threshold_dist).abs() < 0.2 {
                             frame.push(' '); // Invisible exit threshold line
                         } else {
-                            frame.push(wall_chars[col]);
+                            // Calculate per-pixel dithering with row position for vertical variation
+                            frame.push(crate::raycast::get_dithered_ascii_char_with_row(
+                                distance,
+                                wall_type,
+                                max_distance,
+                                hit_x,
+                                hit_y,
+                                row as f64,
+                                &dither,
+                            ));
                         }
                     } else {
-                        frame.push(wall_chars[col]);
+                        // Calculate per-pixel dithering with row position for vertical variation
+                        frame.push(crate::raycast::get_dithered_ascii_char_with_row(
+                            distance,
+                            wall_type,
+                            max_distance,
+                            hit_x,
+                            hit_y,
+                            row as f64,
+                            &dither,
+                        ));
                     }
                 } else {
                     // Floor - stop at exit threshold if ray passed through exit

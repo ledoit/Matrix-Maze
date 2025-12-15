@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+mod dither;
 mod game;
 mod maze;
 mod raycast;
