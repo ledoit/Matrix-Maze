@@ -16,3 +16,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Exception: Dither Module
+
+The following files are licensed under the Mozilla Public License, v. 2.0 (MPL 2.0)
+and are NOT covered by the "All Rights Reserved" license above:
+
+- `app/src-tauri/src/dither/mod.rs`
+- `app/src-tauri/src/dither/pattern.rs`
+- `app/src-tauri/src/dither/bayer.rs`
+
+These files contain code ported from Dither3D by Rune Skovbo Johansen
+(https://github.com/runevision/Dither3D) and are subject to the terms of the
+Mozilla Public License, v. 2.0. A copy of the MPL 2.0 license is available in
+the LICENSE-MPL file in this repository, or at https://mozilla.org/MPL/2.0/.
+
+All other files in this repository remain subject to the "All Rights Reserved"
+license stated above.

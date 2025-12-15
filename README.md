@@ -9,6 +9,7 @@ Visit the [landing page](https://matrix-maze-kappa.vercel.app) to see a demo and
 ## Features
 
 - **3D ASCII Raycasting Engine**: Real-time 3D rendering using ASCII characters with depth perception
+- **Fractal Dithering**: Surface-stable fractal dithering for enhanced visual quality (using MPL 2.0 licensed code)
 - **Procedural Maze Generation**: Randomly generated labyrinths using recursive backtracking algorithm
 - **First-Person Controls**: Smooth movement and rotation with WASD + Q/E keys
 - **Cross-Platform**: Built with Tauri for Windows, macOS, and Linux support
@@ -114,3 +115,13 @@ The maze is generated using a recursive backtracking algorithm:
 3. Game state is updated (player position, rotation)
 4. Frame is rendered using raycasting
 5. ASCII frame is returned to frontend and displayed
+
+## License
+
+This project is licensed under "All Rights Reserved" - see the [LICENSE](LICENSE) file for details.
+
+### Dither Module Exception
+
+The dithering module (`app/src-tauri/src/dither/`) is licensed under the Mozilla Public License, v. 2.0 (MPL 2.0). This code was ported from [Dither3D](https://github.com/runevision/Dither3D) by Rune Skovbo Johansen. See [LICENSE-MPL](LICENSE-MPL) for the full MPL 2.0 license text.
+
+The MPL 2.0 license applies only to the files in the `dither/` module. All other code in this repository remains under the "All Rights Reserved" license.
