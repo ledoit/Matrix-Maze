@@ -4,7 +4,7 @@ A desktop application featuring a first-person 3D ASCII labyrinth adventure game
 
 ## 🎮 [Play Demo / Download](landing.html)
 
-Visit the [landing page](landing.html) to see a demo and download the game for your platform.
+Visit the [landing page](matrix-maze-kappa.vercel.app) to see a demo and download the game for your platform.
 
 ## Features
 
