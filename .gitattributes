@@ -1,0 +1,44 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force LF for all text files
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.toml text eol=lf
+*.rs text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.dll binary
+*.exe binary
+*.dmg binary
+*.app binary
+*.deb binary
+*.rpm binary
+*.mp4 binary
+*.mov binary
+*.webm binary
+*.mkv binary
+*.avi binary
+
+# Generated files (keep as-is)
+app/src-tauri/Cargo.lock text eol=lf
+app/src-tauri/gen/** text eol=lf

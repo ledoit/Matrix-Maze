@@ -13,6 +13,7 @@ app/src-tauri/Cargo.lock
 
 # Game files
 app/maze_map.txt
+app/best_times.json
 
 # OS
 .DS_Store
