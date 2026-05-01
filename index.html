@@ -447,52 +447,104 @@
         // Initialize
         createMatrixRain();
 
-        // Fetch latest release from GitHub API and update download link
+        const RELEASES_API = 'https://api.github.com/repos/ledoit/Matrix-Maze/releases?per_page=50';
+        const RELEASES_PAGE = 'https://github.com/ledoit/Matrix-Maze/releases';
+
+        function versionNumFromTag(tag) {
+            return String(tag || '').replace(/^v/i, '');
+        }
+
+        /** Newest-first releases may have tags with no uploads; pick first release that actually ships a DMG. */
+        function pickMacAsset(assets) {
+            if (!assets || !assets.length) return null;
+            const dmgs = assets.filter((a) => /\.dmg$/i.test(a.name));
+            if (!dmgs.length) return null;
+            const arm = dmgs.find((a) => /(aarch64|arm64|apple)/i.test(a.name));
+            if (arm) return arm;
+            const intel = dmgs.find((a) => /(x86_64|amd64|intel)/i.test(a.name) || /\bx64\b/i.test(a.name));
+            if (intel) return intel;
+            return dmgs[0];
+        }
+
+        /** Prefer NSIS .exe, then .msi; match common Tauri / GitHub naming. */
+        function pickWindowsAsset(assets) {
+            if (!assets || !assets.length) return null;
+            const isWinish = (name) => !/(darwin|mac|linux|\.app)/i.test(name);
+            const win64 = /(x64|x86_64|win64|amd64)/i;
+            const exe = assets.find(
+                (a) => isWinish(a.name) && /\.exe$/i.test(a.name) && win64.test(a.name)
+            );
+            if (exe) return exe;
+            const msi = assets.find(
+                (a) => isWinish(a.name) && /\.msi$/i.test(a.name) && win64.test(a.name)
+            );
+            if (msi) return msi;
+            const anyExe = assets.find((a) => isWinish(a.name) && /\.exe$/i.test(a.name));
+            if (anyExe) return anyExe;
+            return assets.find((a) => isWinish(a.name) && /\.msi$/i.test(a.name)) || null;
+        }
+
+        function applyPlatformLink(link, labelEl, release, asset) {
+            const v = versionNumFromTag(release.tag_name);
+            link.href = asset.browser_download_url;
+            labelEl.textContent = `Download ${v}`;
+            link.classList.remove('coming-soon');
+        }
+
+        function applyFallback(link, labelEl, message) {
+            link.href = RELEASES_PAGE;
+            labelEl.textContent = message;
+            link.classList.remove('coming-soon');
+        }
+
+        // Walk recent releases (newest first): each platform gets the latest tag that actually has that installer.
         async function updateDownloadLinks() {
+            const macosLink = document.getElementById('download-macos');
+            const macosVersion = document.getElementById('macos-version');
+            const windowsLink = document.getElementById('download-windows');
+            const windowsVersion = document.getElementById('windows-version');
+
             try {
-                const response = await fetch('https://api.github.com/repos/ledoit/Matrix-Maze/releases/latest');
-                if (!response.ok) throw new Error('Failed to fetch release');
-                
-                const release = await response.json();
-                const version = release.tag_name; // e.g., "v1.1.0"
-                const versionNum = version.replace('v', ''); // e.g., "1.1.0"
-                
-                // Find the macOS DMG asset
-                const macosAsset = release.assets.find(asset => 
-                    asset.name.includes('.dmg') && asset.name.includes('aarch64')
-                );
-                
-                if (macosAsset) {
-                    const macosLink = document.getElementById('download-macos');
-                    const macosVersion = document.getElementById('macos-version');
-                    macosLink.href = macosAsset.browser_download_url;
-                    macosVersion.textContent = `Download ${versionNum}`;
+                const response = await fetch(RELEASES_API);
+                if (!response.ok) throw new Error('Failed to fetch releases');
+
+                const releases = await response.json();
+                if (!Array.isArray(releases) || releases.length === 0) {
+                    throw new Error('No releases');
                 }
-                
-                // Prefer NSIS EXE, then fall back to MSI.
-                const windowsAsset =
-                    release.assets.find(asset => asset.name.includes('.exe') && asset.name.includes('x64')) ||
-                    release.assets.find(asset => asset.name.includes('.msi') && asset.name.includes('x64'));
-                
-                if (windowsAsset) {
-                    const windowsLink = document.getElementById('download-windows');
-                    const windowsVersion = document.getElementById('windows-version');
-                    windowsLink.href = windowsAsset.browser_download_url;
-                    windowsVersion.textContent = `Download ${versionNum}`;
-                    windowsLink.classList.remove('coming-soon');
+
+                let macHit = null;
+                let winHit = null;
+
+                for (const rel of releases) {
+                    if (rel.draft) continue;
+                    const assets = rel.assets || [];
+                    if (!macHit) {
+                        const a = pickMacAsset(assets);
+                        if (a) macHit = { release: rel, asset: a };
+                    }
+                    if (!winHit) {
+                        const a = pickWindowsAsset(assets);
+                        if (a) winHit = { release: rel, asset: a };
+                    }
+                    if (macHit && winHit) break;
+                }
+
+                if (macHit) {
+                    applyPlatformLink(macosLink, macosVersion, macHit.release, macHit.asset);
+                } else {
+                    applyFallback(macosLink, macosVersion, 'No macOS build in recent releases');
+                }
+
+                if (winHit) {
+                    applyPlatformLink(windowsLink, windowsVersion, winHit.release, winHit.asset);
+                } else {
+                    applyFallback(windowsLink, windowsVersion, 'No Windows build in recent releases');
                 }
             } catch (error) {
-                console.error('Error fetching latest release:', error);
-                // Fallback to a default version if API fails
-                const macosLink = document.getElementById('download-macos');
-                const macosVersion = document.getElementById('macos-version');
-                macosLink.href = 'https://github.com/ledoit/Matrix-Maze/releases/latest';
-                macosVersion.textContent = 'Download Latest';
-                
-                const windowsLink = document.getElementById('download-windows');
-                const windowsVersion = document.getElementById('windows-version');
-                windowsLink.href = 'https://github.com/ledoit/Matrix-Maze/releases/latest';
-                windowsVersion.textContent = 'Download Latest';
+                console.error('Error fetching releases:', error);
+                applyFallback(macosLink, macosVersion, 'Releases (offline?)');
+                applyFallback(windowsLink, windowsVersion, 'Releases (offline?)');
             }
         }
 
