@@ -447,8 +447,39 @@
         // Initialize
         createMatrixRain();
 
-        const RELEASES_API = 'https://api.github.com/repos/ledoit/Matrix-Maze/releases?per_page=50';
+        const RELEASES_API_DIRECT =
+            'https://api.github.com/repos/ledoit/Matrix-Maze/releases?per_page=50';
         const RELEASES_PAGE = 'https://github.com/ledoit/Matrix-Maze/releases';
+
+        async function fetchReleasesArray() {
+            const sources = ['/api/github-releases', RELEASES_API_DIRECT];
+            let lastErr = null;
+            for (const url of sources) {
+                try {
+                    const response = await fetch(url, {
+                        headers: url.includes('api.github.com')
+                            ? { Accept: 'application/vnd.github+json' }
+                            : {},
+                    });
+                    if (!response.ok) {
+                        lastErr = new Error('HTTP ' + response.status);
+                        continue;
+                    }
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        return data;
+                    }
+                    if (data && typeof data.message === 'string') {
+                        lastErr = new Error(data.message);
+                        continue;
+                    }
+                    lastErr = new Error('Unexpected releases payload');
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+            throw lastErr || new Error('Failed to load releases');
+        }
 
         function versionNumFromTag(tag) {
             return String(tag || '').replace(/^v/i, '');
@@ -466,22 +497,22 @@
             return dmgs[0];
         }
 
-        /** Prefer NSIS .exe, then .msi; match common Tauri / GitHub naming. */
+        /** Prefer NSIS .exe, then .msi (e.g. Matrix.Maze_1.3.0_x64-setup.exe). */
         function pickWindowsAsset(assets) {
             if (!assets || !assets.length) return null;
-            const isWinish = (name) => !/(darwin|mac|linux|\.app)/i.test(name);
+            const isOtherPlatform = (name) =>
+                /darwin|macos|\.dmg$|linux|\.deb$|\.AppImage$/i.test(name);
             const win64 = /(x64|x86_64|win64|amd64)/i;
-            const exe = assets.find(
-                (a) => isWinish(a.name) && /\.exe$/i.test(a.name) && win64.test(a.name)
+            const candidates = assets.filter(
+                (a) => /\.(exe|msi)$/i.test(a.name) && !isOtherPlatform(a.name)
             );
-            if (exe) return exe;
-            const msi = assets.find(
-                (a) => isWinish(a.name) && /\.msi$/i.test(a.name) && win64.test(a.name)
-            );
-            if (msi) return msi;
-            const anyExe = assets.find((a) => isWinish(a.name) && /\.exe$/i.test(a.name));
+            const exe64 = candidates.find((a) => /\.exe$/i.test(a.name) && win64.test(a.name));
+            if (exe64) return exe64;
+            const msi64 = candidates.find((a) => /\.msi$/i.test(a.name) && win64.test(a.name));
+            if (msi64) return msi64;
+            const anyExe = candidates.find((a) => /\.exe$/i.test(a.name));
             if (anyExe) return anyExe;
-            return assets.find((a) => isWinish(a.name) && /\.msi$/i.test(a.name)) || null;
+            return candidates.find((a) => /\.msi$/i.test(a.name)) || null;
         }
 
         function applyPlatformLink(link, labelEl, release, asset) {
@@ -503,13 +534,13 @@
             const macosVersion = document.getElementById('macos-version');
             const windowsLink = document.getElementById('download-windows');
             const windowsVersion = document.getElementById('windows-version');
+            if (!macosLink || !macosVersion || !windowsLink || !windowsVersion) {
+                return;
+            }
 
             try {
-                const response = await fetch(RELEASES_API);
-                if (!response.ok) throw new Error('Failed to fetch releases');
-
-                const releases = await response.json();
-                if (!Array.isArray(releases) || releases.length === 0) {
+                const releases = await fetchReleasesArray();
+                if (!releases.length) {
                     throw new Error('No releases');
                 }
 

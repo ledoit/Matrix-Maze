@@ -2,9 +2,9 @@
 
 A desktop application featuring a first-person 3D ASCII labyrinth adventure game built with Rust, Tauri, and JavaScript.
 
-## 🎮 [Play Demo / Download]([landing.html](https://matrix-maze-kappa.vercel.app))
+## 🎮 [Play Demo / Download]([landing.html](https://matrixmaze.vercel.app))
 
-Visit the [landing page](https://matrix-maze-kappa.vercel.app) to see a demo and download the game for your platform.
+Visit the [landing page](https://matrixmaze.vercel.app) to see a demo and download the game for your platform.
 
 ## Features
 

@@ -5,6 +5,7 @@
   "installCommand": null,
   "framework": null,
   "rewrites": [
+    { "handle": "filesystem" },
     {
       "source": "/(.*)",
       "destination": "/index.html"
