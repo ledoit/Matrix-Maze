@@ -171,7 +171,7 @@ impl GameState {
         path.pop(); // Go from src-tauri to app/
         path.push("best_times.json");
         
-        const CURRENT_VERSION: &str = "1.2.3";
+        const CURRENT_VERSION: &str = "1.3.0";
         
         let data = serde_json::json!({
             "version": CURRENT_VERSION,
@@ -189,7 +189,7 @@ impl GameState {
         path.pop(); // Go from src-tauri to app/
         path.push("best_times.json");
         
-        const CURRENT_VERSION: &str = "1.2.3";
+        const CURRENT_VERSION: &str = "1.3.0";
         
         if let Ok(content) = fs::read_to_string(&path) {
             if let Ok(data) = serde_json::from_str::<serde_json::Value>(&content) {
