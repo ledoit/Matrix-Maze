@@ -469,10 +469,10 @@
                     macosVersion.textContent = `Download ${versionNum}`;
                 }
                 
-                // Find the Windows MSI asset
-                const windowsAsset = release.assets.find(asset => 
-                    asset.name.includes('.msi') && asset.name.includes('x64')
-                );
+                // Prefer NSIS EXE, then fall back to MSI.
+                const windowsAsset =
+                    release.assets.find(asset => asset.name.includes('.exe') && asset.name.includes('x64')) ||
+                    release.assets.find(asset => asset.name.includes('.msi') && asset.name.includes('x64'));
                 
                 if (windowsAsset) {
                     const windowsLink = document.getElementById('download-windows');

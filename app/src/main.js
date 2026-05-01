@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { LEVEL_COLORS } from './constants.js';
+import { AdaptiveMusic } from './music.js';
 
 // Initialize colors from constants - sets CSS variables
 function updateColorRgbValues() {
@@ -35,6 +36,7 @@ let levelIndicator = null;
 let controls = null;
 let viewportWidth = 120;
 let viewportHeight = 40;
+const music = new AdaptiveMusic();
 
 // Initialize game
 async function init() {
@@ -57,6 +59,7 @@ async function init() {
     viewport.addEventListener('click', async () => {
         // Ensure viewport has focus when clicked
         viewport.focus();
+        await music.startIfNeeded();
         try {
             await viewport.requestPointerLock();
         } catch (err) {
@@ -283,6 +286,7 @@ function displayFrame(frame) {
                 levelIndicator.textContent = `Level ${level}`;
                 levelIndicator.className = `level-${level}`;
             }
+            music.setLevel(level);
             viewport.className = `level-${level}`;
             if (controls) {
                 controls.className = `level-${level}`;

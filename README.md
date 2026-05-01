@@ -91,6 +91,15 @@ The built application will be in `app/src-tauri/target/release/` (or `app/src-ta
 └── README.md
 ```
 
+## Music (Kaiser)
+
+When this repo lives inside the **Menhir** monorepo, adaptive music is produced in `Music/Kaiser/projects/matrix-maze/` and copied into `app/public/audio/music/` by the client sync script.
+
+1. Build stems in Kaiser: `Music/Kaiser/export/convert-stems.bat matrix-maze` (or `.sh` on Unix) after placing WAVs in `Music/Kaiser/projects/matrix-maze/export/inbox/`.
+2. From `app/`: `npm run music:sync`
+
+Details: `app/public/audio/music/README.md` and `Music/Kaiser/projects/matrix-maze/README.md`.
+
 ## How It Works
 
 ### 3D Rendering
