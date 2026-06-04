@@ -11,8 +11,11 @@ Visit the [landing page](https://matrixmaze.vercel.app) to see a demo and downlo
 - **3D ASCII Raycasting Engine**: Real-time 3D rendering using ASCII characters with depth perception
 - **Fractal Dithering**: Surface-stable fractal dithering for enhanced visual quality (using MPL 2.0 licensed code)
 - **Procedural Maze Generation**: Randomly generated labyrinths using recursive backtracking algorithm
+- **5 levels** with best-time persistence and level-complete flow
+- **Adaptive music**: Layered stems (base, pressure, chase, dread) with procedural fallback; click viewport to unlock audio
 - **First-Person Controls**: Smooth movement and rotation with WASD + Q/E keys
 - **Cross-Platform**: Built with Tauri for Windows, macOS, and Linux support
+- **Landing page**: `index.html` on Vercel with release downloads via `api/github-releases.js`
 
 ## Controls
 
@@ -38,12 +41,15 @@ git clone git@github.com:ledoit/Matrix-Maze.git
 cd Matrix-Maze
 ```
 
-2. Install frontend dependencies:
+2. Install frontend dependencies (all npm commands run from `app/`):
 ```bash
+cd app
 npm install
 ```
 
 3. The Rust dependencies will be automatically installed when you build the project.
+
+**Current version:** 1.3.0 (`app/package.json`, `app/src-tauri/Cargo.toml`)
 
 ## Development
 
@@ -75,6 +81,9 @@ The built application will be in `app/src-tauri/target/release/` (or `app/src-ta
 .
 ├── index.html             # Landing page (deployed to Vercel)
 ├── vercel.json            # Vercel deployment config
+├── api/                   # Serverless GitHub releases proxy (landing downloads)
+├── BUILD.md               # Release build checklist
+├── TODO.md                # Open issues (spacebar, creature, remaining audio)
 ├── app/                   # Game application
 │   ├── src/              # Frontend (HTML/CSS/JavaScript)
 │   │   ├── main.js       # Game loop and Tauri integration

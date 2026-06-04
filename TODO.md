@@ -19,13 +19,13 @@
 - Lobby
 - Level complete
 - Level failed
-- Level gameplay
+- Level gameplay (adaptive stems — **done** via `app/src/music.js` + Kaiser pipeline)
 - Game complete
 
 **Sound Effects**:
 - Creature teleport SFX
 
-**Status**: Pending
+**Status**: Partially done — adaptive level music (base / pressure / chase / dread) ships with procedural fallback when OGG missing; sync via `npm run music:sync` from Kaiser. Lobby, level-complete/fail stingers, and SFX still open.
 
 
 ## 4. Add Chasing Creature
