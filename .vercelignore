@@ -1,0 +1,14 @@
+# Keep Vercel deploys to the landing + API only (not the Tauri app tree).
+app/
+node_modules/
+**/node_modules/
+**/target/
+.git/
+.vercel/
+*.log
+.env*
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
