@@ -79,26 +79,82 @@ The built application will be in `app/src-tauri/target/release/` (or `app/src-ta
 
 ```
 .
-├── index.html             # Landing page (deployed to Vercel)
+├── index.html             # Landing page (fullscreen playable shell, deployed to Vercel)
+├── play/                  # Generated browser game build served at /play (see below)
 ├── vercel.json            # Vercel deployment config
 ├── api/                   # Serverless GitHub releases proxy (landing downloads)
 ├── BUILD.md               # Release build checklist
 ├── TODO.md                # Open issues (spacebar, creature, remaining audio)
 ├── app/                   # Game application
 │   ├── src/              # Frontend (HTML/CSS/JavaScript)
-│   │   ├── main.js       # Game loop and Tauri integration
+│   │   ├── main.js       # Game loop (host-agnostic)
+│   │   ├── backend.js    # GameBackend: Tauri invoke (desktop) vs WASM (browser)
+│   │   ├── wasm/         # Generated wasm-bindgen output (committed)
 │   │   └── style.css     # Styling
+│   ├── scripts/
+│   │   └── build-wasm.sh # Compiles the Rust core to WebAssembly
 │   ├── src-tauri/        # Rust backend
 │   │   ├── src/
-│   │   │   ├── main.rs   # Tauri entry point
+│   │   │   ├── lib.rs    # Shared game library (native + wasm)
+│   │   │   ├── main.rs   # Tauri (native) entry point
+│   │   │   ├── wasm_api.rs # Browser (wasm-bindgen) entry points
+│   │   │   ├── platform.rs # Per-host time / RNG / persistence shims
 │   │   │   ├── game.rs   # Game state and logic
 │   │   │   ├── maze.rs   # Maze generation
 │   │   │   └── raycast.rs # 3D raycasting engine
-│   │   └── Cargo.toml    # Rust dependencies
+│   │   └── Cargo.toml    # Rust dependencies (dual-target: native + wasm)
 │   ├── index.html        # Game HTML entry point
 │   └── package.json       # Node.js dependencies
 └── README.md
 ```
+
+## Playing in the Browser (WebAssembly)
+
+The same Rust game logic that powers the desktop app is compiled to WebAssembly so the game
+runs in Chrome/Firefox/Safari with no install. There is no JS reimplementation — `game.rs`,
+`maze.rs`, `raycast.rs` and `dither/` are shared between both targets:
+
+- `app/src-tauri/` is a **dual-target crate**. The native build produces the Tauri binary
+  (`src/main.rs`); the `wasm32-unknown-unknown` build produces a cdylib whose `src/wasm_api.rs`
+  exposes the same `init_game` / `update_game` / `render_frame` / `next_level` entry points.
+- Host differences (wall-clock time, RNG entropy, best-time persistence) are isolated in
+  `src/platform.rs` — `std` on desktop, `js-sys`/`web-sys` (localStorage) in the browser.
+- The frontend `app/src/main.js` talks to a thin `GameBackend` (`app/src/backend.js`) that is
+  `TauriBackend` (via `invoke`) on desktop and `WasmBackend` (via the wasm module) in the
+  browser. Tauri APIs are only dynamically imported on desktop, so nothing crashes when
+  `__TAURI__` is absent.
+
+### Build steps
+
+Prerequisites (one-time):
+
+```bash
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.100   # must match the wasm-bindgen crate pin
+```
+
+Then, from `app/`:
+
+```bash
+npm install
+npm run build:wasm     # Rust -> wasm, regenerates app/src/wasm/ (only when Rust changes)
+npm run dev            # local dev server (http://localhost:1420)
+npm run build:web      # production browser build -> ../play (served at /play)
+```
+
+`app/src/wasm/` and `play/` are committed build artifacts, so the Vite build and Vercel do
+**not** need a Rust toolchain — only re-run `build:wasm` / `build:web` when the Rust game logic
+or frontend changes.
+
+### Deployment / routes
+
+- `/` — landing page: a fullscreen playable shell that embeds the game and shows a sidebar
+  (Updates, Download, How To Play). Clicking **Play** hides the sidebar; pressing **Esc**
+  brings it back. Desktop download links still use the GitHub releases proxy in `api/`.
+- `/play/` — the standalone browser game (the Vite build in `play/`), also playable directly.
+
+Vercel serves the repo root statically (`vercel.json` `outputDirectory: "."`), so the committed
+`play/` directory is served at `/play/` with no build-time Rust required.
 
 ## Music (Kaiser)
 
@@ -129,10 +185,11 @@ The maze is generated using a recursive backtracking algorithm:
 ### Game Loop
 
 1. Frontend captures keyboard input
-2. Input is sent to Rust backend via Tauri commands
+2. Input is sent to the Rust game logic via the active `GameBackend` — Tauri commands on
+   desktop, or the WebAssembly module in the browser
 3. Game state is updated (player position, rotation)
 4. Frame is rendered using raycasting
-5. ASCII frame is returned to frontend and displayed
+5. ASCII frame is returned to the frontend and displayed
 
 ## License
 

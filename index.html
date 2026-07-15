@@ -26,198 +26,128 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
             background: #000;
             color: #00ff00;
             line-height: 1.4;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* Matrix rain effect background */
-        .matrix-bg {
+        /* The game fills the whole viewport; the shell chrome floats on top. */
+        #game-frame {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-            pointer-events: none;
-            overflow: hidden;
+            border: 0;
+            background: #000;
+            z-index: 1;
         }
 
-        .container {
-            width: 100%;
-            max-width: none;
-            margin: 0;
-            padding: 10px 0;
-            height: 100vh;
+        /* Overlay shown while the game is paused (initial state + after pressing Escape). */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            background: radial-gradient(circle at 72% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.82));
+            transition: opacity 0.25s ease;
+        }
+
+        #overlay.playing {
+            display: none;
+        }
+
+        /* Left sidebar: Updates / Download / How To Play. */
+        #sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(380px, 88vw);
+            padding: 22px 20px;
+            overflow-y: auto;
+            background: rgba(0, 8, 0, 0.86);
+            border-right: 1px solid #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.25);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
-            box-shadow: none;
+            gap: 18px;
         }
 
-        /* Header */
-        header {
-            text-align: center;
-            padding: 15px 20px;
-            border-bottom: 2px solid #00ff00;
-            flex-shrink: 0;
-        }
-
-
-        h1 {
-            font-size: 2.5em;
+        .brand-title {
+            font-size: 1.7em;
+            letter-spacing: 4px;
             text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-            margin: 5px 0;
-            letter-spacing: 5px;
         }
 
-        .tagline {
-            font-size: 1em;
+        .brand-tag {
+            font-size: 0.8em;
             color: #00cc00;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
-        /* ASCII Art */
-        .ascii-art {
-            font-family: 'Courier New', monospace;
-            font-size: 0.4em;
-            line-height: 1;
-            color: #00ff00;
-            text-align: center;
-            margin: 10px 0;
-            white-space: pre;
-        }
-
-        /* Main content area — full bleed under hero (no side gutters) */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            flex: 1;
-            padding: 10px 0;
-            min-height: 0;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        /* Sections */
-        section {
-            padding: 15px;
+        .panel {
             border: 1px solid #00ff00;
             background: rgba(0, 255, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            overflow: hidden;
-            min-height: 0;
+            padding: 12px;
         }
 
-        h2 {
-            font-size: 1.1em;
+        .panel h2 {
+            font-size: 1em;
             margin-bottom: 10px;
-            text-align: center;
             text-shadow: 0 0 5px #00ff00;
             border-bottom: 1px solid #00ff00;
             padding-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Controls */
-        .controls {
-            background: rgba(0, 255, 0, 0.05);
-            padding: 10px;
-            margin: 0;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .controls h3 {
-            margin-bottom: 8px;
-            margin-top: 8px;
-            color: #00ff00;
-            font-size: 0.95em;
-        }
-
-        .controls h3:first-child {
-            margin-top: 0;
-        }
-
-        .controls ul {
-            list-style: none;
-            padding-left: 12px;
-            font-size: 0.85em;
-            margin: 0 0 15px 0;
-        }
-
-        .controls li {
-            margin: 5px 0;
-            color: #00cc00;
-        }
-
-        .controls kbd {
-            background: rgba(0, 255, 0, 0.2);
-            padding: 2px 6px;
+        .video-wrap {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
             border: 1px solid #00ff00;
-            border-radius: 3px;
-            font-family: monospace;
+            background: #000;
         }
 
-        /* Download Section */
-        #download {
-            justify-content: flex-start;
+        .video-wrap iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
 
-        #download > p:first-of-type {
-            margin-bottom: 12px;
-            margin-top: 0;
-        }
-
-        .downloads {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 0;
-            flex: 1;
-            min-height: 0;
+        .muted {
+            font-size: 0.75em;
+            color: #00aa00;
+            margin-top: 8px;
         }
 
         .download-btn {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 15px 8px;
+            padding: 12px 8px;
+            margin-bottom: 10px;
             background: rgba(0, 255, 0, 0.1);
             border: 2px solid #00ff00;
             color: #00ff00;
             text-decoration: none;
             text-align: center;
             font-size: 0.9em;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
-            flex: 1;
         }
 
         .download-btn:hover {
             background: rgba(0, 255, 0, 0.2);
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .download-btn:active {
-            transform: translateY(0);
         }
 
         .download-btn .platform {
             display: block;
-            font-size: 1em;
             margin-bottom: 3px;
         }
 
@@ -226,33 +156,55 @@
             color: #00cc00;
         }
 
-        .coming-soon {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .download-btn:not(.coming-soon):hover {
-            opacity: 1;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 8px 20px;
-            border-top: 2px solid #00ff00;
+        .note {
+            font-size: 0.72em;
             color: #00cc00;
-            flex-shrink: 0;
+            border: 1px solid #007700;
+            padding: 8px;
+        }
+
+        .note code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1px 5px;
+            word-break: break-all;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.82em;
+        }
+
+        .controls-grid strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .controls-grid div > div {
+            color: #00cc00;
+        }
+
+        kbd {
+            background: rgba(0, 255, 0, 0.2);
+            padding: 1px 6px;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+        }
+
+        .side-footer {
+            margin-top: auto;
+            text-align: center;
         }
 
         .github-link {
             color: #00ff00;
             text-decoration: none;
-            margin-top: 5px;
             display: inline-block;
             padding: 6px 12px;
             border: 1px solid #00ff00;
-            transition: all 0.3s;
-            font-size: 0.85em;
+            transition: all 0.2s;
+            font-size: 0.82em;
         }
 
         .github-link:hover {
@@ -260,204 +212,166 @@
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
         }
 
-        /* Left column with video and controls */
-        #left-column {
-            display: flex;
-            flex-direction: column;
+        /* Big centered PLAY button. */
+        #play-btn {
+            position: absolute;
+            top: 50%;
+            left: calc(50% + min(190px, 44vw) / 2);
+            transform: translate(-50%, -50%);
+            padding: 22px 60px;
+            font-family: inherit;
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 6px;
+            color: #00ff00;
+            background: rgba(0, 20, 0, 0.7);
+            border: 2px solid #00ff00;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-shadow: 0 0 10px #00ff00;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+            transition: all 0.2s;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-
-            .downloads {
-                flex-direction: column;
-            }
-
+        #play-btn:hover {
+            background: rgba(0, 40, 0, 0.85);
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.7);
+            transform: translate(-50%, -50%) scale(1.05);
         }
 
-        @media (max-height: 700px) {
-            h1 {
-                font-size: 1.5em;
-            }
+        #play-hint {
+            position: absolute;
+            top: calc(50% + 70px);
+            left: calc(50% + min(190px, 44vw) / 2);
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: #00aa00;
+            white-space: nowrap;
+        }
 
-            .tagline {
-                font-size: 0.8em;
-            }
-
-            section {
-                padding: 8px;
-            }
-
-            h2 {
-                font-size: 1em;
-                margin-bottom: 6px;
-            }
+        @media (max-width: 760px) {
+            #sidebar { width: 100vw; border-right: 0; }
+            #play-btn, #play-hint { left: 50%; }
+            #play-btn { transform: translate(-50%, -50%); }
         }
     </style>
 </head>
 <body>
-    <div class="matrix-bg" id="matrixBg"></div>
+    <!-- The playable game (Vite/WASM build) served from /play/. -->
+    <iframe
+        id="game-frame"
+        title="Matrix Maze"
+        src="/play/"
+        allow="autoplay; fullscreen; pointer-lock"
+        allowfullscreen></iframe>
 
-    <div class="container">
-        <header>
-            <div class="ascii-art">
-    ███╗   ███╗ █████╗ ████████╗██████╗ ██╗██╗  ██╗    ███╗   ███╗ █████╗ ███████╗███████╗
-    ████╗ ████║██╔══██╗╚══██╔══╝██╔══██╗██║╚██╗██╔╝    ████╗ ████║██╔══██╗╚══███╔╝██╔════╝
-    ██╔████╔██║███████║   ██║   ██████╔╝██║ ╚███╔╝     ██╔████╔██║███████║  ███╔╝ ███████╗
-    ██║╚██╔╝██║██╔══██║   ██║   ██╔══██╗██║ ██╔██╗     ██║╚██╔╝██║██╔══██║ ███╔╝  ██╔════╝
-    ██║ ╚═╝ ██║██║  ██║   ██║   ██║  ██║██║██╔╝ ██╗    ██║ ╚═╝ ██║██║  ██║███████╗███████╗
-    ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝
+    <div id="overlay">
+        <aside id="sidebar">
+            <div class="brand">
+                <div class="brand-title">MATRIX MAZE</div>
+                <div class="brand-tag">Navigate the labyrinth, escape the matrix.</div>
             </div>
-            <h1>MATRIX MAZE</h1>
-            <p class="tagline">Navigate the labyrinth, escape the matrix.</p>
-        </header>
 
-        <div class="main-content">
-            <section id="left-column">
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0;">
-                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 1px solid #00ff00; background: #000;">
-                        <iframe 
-                            id="youtube-video"
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                            src="https://www.youtube-nocookie.com/embed/6abATi96C7o?modestbranding=1&rel=0&controls=1&fs=1"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>
+            <section class="panel">
+                <h2>Updates</h2>
+                <div class="video-wrap">
+                    <iframe
+                        title="Matrix Maze gameplay preview"
+                        src="https://www.youtube-nocookie.com/embed/6abATi96C7o?modestbranding=1&rel=0&controls=1&fs=1"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
                 </div>
-                
-                <div id="controls-compact" style="margin-top: 15px; padding-top: 15px;">
-                    <h2 style="font-size: 1em; margin-bottom: 8px;">Controls</h2>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.8em;">
-                        <div>
-                            <strong style="color: #00ff00; display: block; margin-bottom: 4px;">Movement</strong>
-                            <div style="color: #00cc00;"><kbd>W</kbd> Forward</div>
-                            <div style="color: #00cc00;"><kbd>S</kbd> Back</div>
-                            <div style="color: #00cc00;"><kbd>A</kbd> Left</div>
-                            <div style="color: #00cc00;"><kbd>D</kbd> Right</div>
-                        </div>
-                        <div>
-                            <strong style="color: #00ff00; display: block; margin-bottom: 4px;">Rotation</strong>
-                            <div style="color: #00cc00;"><kbd>Q</kbd> Turn Left</div>
-                            <div style="color: #00cc00;"><kbd>E</kbd> Turn Right</div>
-                        </div>
-                        <div>
-                            <strong style="color: #00ff00; display: block; margin-bottom: 4px;">Game</strong>
-                            <div style="color: #00cc00;"><kbd>SPACE</kbd> Next Level</div>
-                        </div>
-                    </div>
-                </div>
+                <p class="muted">Latest gameplay preview.</p>
             </section>
 
-            <section id="download">
+            <section class="panel" id="download">
                 <h2>Download</h2>
-                <div class="downloads">
-                    <a href="#" 
-                       class="download-btn" 
-                       id="download-macos"
-                       title="Download for macOS">
-                        <span class="platform">🍎 macOS</span>
-                        <span class="size" id="macos-version">Loading...</span>
-                    </a>
-                    <a href="#" 
-                       class="download-btn" 
-                       id="download-windows"
-                       title="Download for Windows">
-                        <span class="platform">🪟 Windows</span>
-                        <span class="size" id="windows-version">Loading...</span>
-                    </a>
-                    <div style="padding: 10px; border: 1px solid #00ff00; background: rgba(0, 255, 0, 0.05); font-size: 0.75em; color: #00cc00; word-wrap: break-word; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center; flex: 1;">
-                        <strong style="color: #00ff00;">macOS Users:</strong> If you see "app is damaged" after installation, right-click the app and select "Open", or run this in Terminal: <code style="display: inline; padding: 2px 6px; background: rgba(0, 0, 0, 0.3); word-break: break-all;">xattr -cr /Applications/Matrix\ Maze.app</code>
+                <a href="#" class="download-btn" id="download-macos" title="Download for macOS">
+                    <span class="platform">🍎 macOS</span>
+                    <span class="size" id="macos-version">Loading...</span>
+                </a>
+                <a href="#" class="download-btn" id="download-windows" title="Download for Windows">
+                    <span class="platform">🪟 Windows</span>
+                    <span class="size" id="windows-version">Loading...</span>
+                </a>
+                <p class="note">
+                    <strong>macOS Users:</strong> If you see "app is damaged" after installation,
+                    right-click the app and select "Open", or run this in Terminal:
+                    <code>xattr -cr /Applications/Matrix\ Maze.app</code>
+                </p>
+            </section>
+
+            <section class="panel">
+                <h2>How to Play</h2>
+                <div class="controls-grid">
+                    <div>
+                        <strong>Movement</strong>
+                        <div><kbd>W</kbd> Forward</div>
+                        <div><kbd>S</kbd> Back</div>
+                        <div><kbd>A</kbd> Left</div>
+                        <div><kbd>D</kbd> Right</div>
+                    </div>
+                    <div>
+                        <strong>Rotation</strong>
+                        <div><kbd>Q</kbd> Turn Left</div>
+                        <div><kbd>E</kbd> Turn Right</div>
+                        <strong style="margin-top:10px;">Game</strong>
+                        <div><kbd>Space</kbd> Next Level</div>
+                        <div><kbd>Esc</kbd> Pause</div>
                     </div>
                 </div>
+                <p class="muted">Reach the exit of all 5 levels as fast as you can.</p>
             </section>
-        </div>
 
-        <footer>
-        </footer>
+            <div class="side-footer">
+                <a class="github-link" href="https://github.com/ledoit/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
+            </div>
+        </aside>
+
+        <button id="play-btn" type="button">▶ Play</button>
+        <div id="play-hint">Press <kbd>Esc</kbd> anytime to pause</div>
     </div>
 
     <script>
-        // Simple matrix rain effect
-        function createMatrixRain() {
-            const canvas = document.createElement('canvas');
-            canvas.id = 'matrixCanvas';
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.zIndex = '-1';
-            canvas.style.opacity = '0.1';
-            canvas.style.pointerEvents = 'none';
-            document.body.appendChild(canvas);
+        // --- Play/pause coordination with the embedded game ---
+        const overlay = document.getElementById('overlay');
+        const playBtn = document.getElementById('play-btn');
+        const gameFrame = document.getElementById('game-frame');
+        let hasStarted = false;
 
-            const ctx = canvas.getContext('2d');
-            // Ensure canvas covers full viewport
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            // Set canvas to cover full area
-            canvas.style.width = '100vw';
-            canvas.style.height = '100vh';
-
-            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
-            const fontSize = 14;
-            const columns = Math.ceil(canvas.width / fontSize);
-            const drops = [];
-
-            for (let x = 0; x < columns; x++) {
-                drops[x] = Math.random() * canvas.height / fontSize;
-            }
-
-            function draw() {
-                // Clear with fully transparent overlay to maintain brightness
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = '#00ff00';
-                ctx.font = fontSize + 'px monospace';
-
-                for (let i = 0; i < drops.length; i++) {
-                    const text = chars[Math.floor(Math.random() * chars.length)];
-                    const x = i * fontSize;
-                    const y = drops[i] * fontSize;
-                    ctx.fillText(text, x, y);
-
-                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
-                }
-            }
-
-            setInterval(draw, 33);
-
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                canvas.style.width = '100vw';
-                canvas.style.height = '100vh';
-                // Recalculate columns
-                const newColumns = Math.ceil(canvas.width / fontSize);
-                while (drops.length < newColumns) {
-                    drops.push(Math.random() * canvas.height / fontSize);
-                }
-                drops.length = newColumns;
-            });
+        function showOverlay() {
+            overlay.classList.remove('playing');
+            playBtn.textContent = hasStarted ? '▶ Resume' : '▶ Play';
         }
 
-        // Initialize
-        createMatrixRain();
+        function hideOverlay() {
+            overlay.classList.add('playing');
+        }
 
+        // The game (in the iframe) reports its state; mirror it in the overlay.
+        window.addEventListener('message', (e) => {
+            const data = e.data;
+            if (!data || data.source !== 'mm-game') return;
+            if (data.type === 'playing') {
+                hasStarted = true;
+                hideOverlay();
+            } else if (data.type === 'paused' || data.type === 'ready') {
+                showOverlay();
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            // Ask the game to start/resume, then hand it focus so keyboard input flows through.
+            try {
+                gameFrame.contentWindow.postMessage({ source: 'mm-shell', type: 'play' }, location.origin);
+            } catch (err) {
+                console.warn('Could not message game frame:', err);
+            }
+            hideOverlay();
+            try { gameFrame.contentWindow.focus(); } catch (_) {}
+        });
+
+        // --- Desktop release downloads (unchanged logic, GitHub releases proxy) ---
         const RELEASES_API_DIRECT =
             'https://api.github.com/repos/ledoit/Matrix-Maze/releases?per_page=50';
         const RELEASES_PAGE = 'https://github.com/ledoit/Matrix-Maze/releases';
@@ -590,29 +504,7 @@
             }
         }
 
-        // Update download links on page load
         updateDownloadLinks();
-
-        // YouTube video ID - Replace 'VIDEO_ID_HERE' with your actual YouTube video ID
-        // To get your video ID:
-        // 1. Upload video to YouTube as unlisted
-        // 2. Copy the video ID from the URL (e.g., youtube.com/watch?v=VIDEO_ID_HERE)
-        // 3. Replace VIDEO_ID_HERE below with your actual video ID
-        const YOUTUBE_VIDEO_ID = '6abATi96C7o';
-        
-        // Update YouTube embed if video ID is set
-        if (YOUTUBE_VIDEO_ID && YOUTUBE_VIDEO_ID !== 'VIDEO_ID_HERE') {
-            const iframe = document.getElementById('youtube-video');
-            if (iframe) {
-                iframe.src = `https://www.youtube-nocookie.com/embed/${YOUTUBE_VIDEO_ID}?modestbranding=1&rel=0&controls=1&fs=1`;
-            }
-        } else {
-            // Hide video section if no video ID is set
-            const leftColumn = document.getElementById('left-column');
-            if (leftColumn) {
-                leftColumn.style.display = 'none';
-            }
-        }
     </script>
 </body>
 </html>

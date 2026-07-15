@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { createBackend } from './backend.js';
 import { LEVEL_COLORS } from './constants.js';
 import { AdaptiveMusic } from './music.js';
 
@@ -18,6 +18,7 @@ function updateColorRgbValues() {
     });
 }
 
+let backend = null;
 let gameState = null;
 let keys = {
     w: false,
@@ -30,6 +31,14 @@ let keys = {
 
 let mouseDeltaX = 0.0;
 let lastFrameTime = null;
+
+// Play/pause coordination for the embedded browser landing (the fullscreen shell in the repo
+// root index.html). Only active when the game runs inside an iframe on the web build; the
+// desktop app and the standalone /play page run unpaused as before.
+let shellControlled = false;
+let paused = false;
+let hasStarted = false; // whether the player has ever hit PLAY (drives PLAY vs RESUME label)
+let pausedAt = null; // wall-clock seconds when the current pause began (for timer compensation)
 
 let viewport = null;
 let levelIndicator = null;
@@ -100,19 +109,108 @@ async function init() {
         if (document.pointerLockElement !== viewport) {
             // Pointer was unlocked, reset mouse delta
             mouseDeltaX = 0.0;
+            // Exiting pointer lock (e.g. Escape, which the browser consumes) pauses the
+            // embedded landing so the sidebar/PLAY overlay returns.
+            if (shellControlled && !paused) {
+                pauseToShell();
+            }
         }
     });
     
     try {
-        const stateJson = await invoke('init_game');
+        // Select the host backend (Tauri invoke on desktop, WASM in the browser).
+        backend = await createBackend();
+
+        // When embedded in the web landing shell, start paused behind a PLAY button. The
+        // shell (repo root index.html) shows its sidebar until the player starts.
+        shellControlled = !backend.isDesktop && window.self !== window.top;
+        if (shellControlled) {
+            paused = true;
+            pausedAt = performance.now() / 1000.0;
+            window.addEventListener('message', handleShellMessage);
+        }
+
+        const stateJson = await backend.initGame();
         gameState = stateJson;
         console.log('Game initialized, state:', stateJson.substring(0, 100));
         lastFrameTime = performance.now() / 1000.0; // Initialize frame time
         resizeViewport();
+        if (shellControlled) {
+            // Tell the shell we're ready and currently paused so it shows the sidebar/PLAY.
+            postToShell('ready');
+            postToShell('paused');
+        }
         gameLoop();
     } catch (error) {
         console.error('Failed to initialize game:', error);
     }
+}
+
+// --- Embedded-shell play/pause coordination (web landing only) ---
+
+// Notifies the parent landing shell of a state change ('ready' | 'playing' | 'paused').
+function postToShell(type) {
+    if (!shellControlled) return;
+    try {
+        window.parent.postMessage({ source: 'mm-game', type }, window.location.origin);
+    } catch (err) {
+        console.warn('postToShell failed:', err);
+    }
+}
+
+// Handles messages from the shell (currently just the PLAY/RESUME action).
+function handleShellMessage(e) {
+    const data = e.data;
+    if (!data || data.source !== 'mm-shell') return;
+    if (data.type === 'play') {
+        startPlaying();
+    }
+}
+
+// Resumes play from a paused state. The first PLAY starts a fresh game; subsequent resumes
+// continue the current one, shifting the level start time forward so paused time isn't counted.
+async function startPlaying() {
+    if (!paused) return;
+
+    if (!hasStarted) {
+        // First launch: begin a fresh game so its timer starts now, not at page load.
+        gameState = await backend.initGame();
+        hasStarted = true;
+    } else if (pausedAt !== null) {
+        gameState = shiftLevelStart(gameState, performance.now() / 1000.0 - pausedAt);
+    }
+
+    pausedAt = null;
+    paused = false;
+    lastFrameTime = performance.now() / 1000.0; // avoid a large delta on the first live frame
+    if (viewport) viewport.focus();
+    postToShell('playing');
+}
+
+// Pauses play and asks the shell to reveal its sidebar/PLAY overlay again.
+function pauseToShell() {
+    if (paused) return;
+    paused = true;
+    pausedAt = performance.now() / 1000.0;
+    if (document.pointerLockElement) {
+        document.exitPointerLock();
+    }
+    postToShell('paused');
+}
+
+// Advances `level_start_time` by `deltaSeconds` so time spent paused doesn't count toward the
+// level timer. Operates on the JSON state string the backend hands back.
+function shiftLevelStart(stateJson, deltaSeconds) {
+    try {
+        const obj = JSON.parse(stateJson);
+        if (typeof obj.level_start_time === 'number') {
+            obj.level_start_time += deltaSeconds;
+            return JSON.stringify(obj);
+        }
+    } catch (e) {
+        // Leave state untouched on parse failure.
+    }
+    return stateJson;
 }
 
 function resizeViewport() {
@@ -199,38 +297,32 @@ async function gameLoop() {
     
     // Reset mouse delta after using it
     mouseDeltaX = 0.0;
-    
+
     // Update game state
     try {
-        gameState = await invoke('update_game', {
-            stateJson: gameState,
-            input: input,
-        });
-        
+        // While paused (embedded landing, pre-PLAY), keep rendering the current frame so the
+        // shell shows a live teaser, but don't advance the simulation.
+        if (!paused) {
+            gameState = await backend.updateGame(gameState, input);
+        }
+
         // Render frame (returns [frame, updatedState])
-        const [frame, updatedState] = await invoke('render_frame', {
-            stateJson: gameState,
-            width: viewportWidth,
-            height: viewportHeight,
-        });
-        
+        const [frame, updatedState] = await backend.renderFrame(
+            gameState,
+            viewportWidth,
+            viewportHeight,
+        );
+
         // Update game state in case freeze frame was captured
         gameState = updatedState;
-        
-        // Debug: log first 100 chars of frame
-        if (frame && frame.length > 0) {
-            console.log('Frame preview:', frame.substring(0, 100));
-        } else {
-            console.warn('Empty frame received');
-        }
-        
+
         // Display frame
         displayFrame(frame);
     } catch (error) {
         console.error('Game loop error:', error);
         console.error('Game state:', gameState);
     }
-    
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -305,6 +397,11 @@ function displayFrame(frame) {
 
 // Keyboard event handlers - listen on window to catch all keys
 window.addEventListener('keydown', async (e) => {
+    // Ignore gameplay keys while paused behind the landing overlay (Escape still handled below).
+    if (paused && e.key !== 'Escape') {
+        return;
+    }
+
     // Check if game is won and space is pressed for restart
     if (e.key === ' ' || e.key === 'Spacebar') {
         try {
@@ -321,7 +418,7 @@ window.addEventListener('keydown', async (e) => {
                 e.preventDefault();
                 
                 // Advance to next level or restart
-                gameState = await invoke('next_level', { stateJson: gameState });
+                gameState = await backend.nextLevel(gameState);
                 console.log('Advanced to next level or restarted');
                 
                 // Ensure viewport maintains focus after level transition
@@ -361,17 +458,14 @@ window.addEventListener('keydown', async (e) => {
             e.preventDefault();
             break;
         case 'escape':
-            // Unlock pointer if locked
-            if (document.pointerLockElement) {
+            if (shellControlled) {
+                // In the web landing: pause and bring the sidebar/PLAY overlay back.
+                pauseToShell();
+            } else if (document.pointerLockElement) {
                 document.exitPointerLock();
-            } else {
-                // Tauri 2.x way to close window
-                import('@tauri-apps/api/window').then(({ appWindow }) => {
-                    appWindow.close();
-                }).catch(() => {
-                    // Fallback if API not available
-                    window.close();
-                });
+            } else if (backend?.isDesktop) {
+                // Desktop only — the browser has no window to close.
+                backend.closeWindow();
             }
             e.preventDefault();
             break;

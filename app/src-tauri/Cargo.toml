@@ -12,13 +12,33 @@ license = ""
 repository = ""
 edition = "2021"
 
+# Two build targets share this crate:
+# - native: the Tauri desktop binary (src/main.rs)
+# - wasm32-unknown-unknown: a cdylib exposing the game loop to the browser (src/lib.rs)
+# The game logic lives in the library; main.rs and the wasm wrappers are thin platform shims.
+[lib]
+name = "matrix_maze"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+# tauri-build is a build-dependency compiled for the host, so it is always available.
+# build.rs only invokes it for non-wasm targets (see build.rs).
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0", features = [] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# Native-only: the Tauri runtime does not compile to wasm.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tauri = { version = "2.0", features = [] }
+
+# Browser-only: wasm-bindgen glue plus JS interop for time, RNG entropy and localStorage.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.100"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window", "Storage", "console"] }
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
