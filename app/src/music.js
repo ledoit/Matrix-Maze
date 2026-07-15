@@ -1,8 +1,11 @@
+// Resolve stem URLs against the deploy base so audio works whether the app is served from
+// the site root (desktop / dev) or a sub-path like /play/ (Vercel browser build).
+const BASE = (import.meta.env?.BASE_URL ?? '/').replace(/\/$/, '');
 const STEM_FILES = {
-  base: '/audio/music/matrix_maze_base.ogg',
-  pressure: '/audio/music/matrix_maze_pressure.ogg',
-  chase: '/audio/music/matrix_maze_chase.ogg',
-  dread: '/audio/music/matrix_maze_dread.ogg',
+  base: `${BASE}/audio/music/matrix_maze_base.ogg`,
+  pressure: `${BASE}/audio/music/matrix_maze_pressure.ogg`,
+  chase: `${BASE}/audio/music/matrix_maze_chase.ogg`,
+  dread: `${BASE}/audio/music/matrix_maze_dread.ogg`,
 };
 
 const STEM_DEFAULTS = {

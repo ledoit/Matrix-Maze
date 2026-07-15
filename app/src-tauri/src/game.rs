@@ -1,8 +1,7 @@
 use crate::maze::Maze;
+use crate::platform;
 use crate::raycast::cast_ray;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GameState {
@@ -141,11 +140,8 @@ impl GameState {
         }
         
         // Get current time in seconds
-        let level_start_time = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs_f64();
-        
+        let level_start_time = platform::now_secs();
+
         GameState {
             player_x: start_x,
             player_y: start_y,
@@ -167,31 +163,22 @@ impl GameState {
     }
     
     pub fn save_best_times(best_times: &[Option<f64>], best_total_time: Option<f64>) {
-        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        path.pop(); // Go from src-tauri to app/
-        path.push("best_times.json");
-        
         const CURRENT_VERSION: &str = "1.3.0";
-        
+
         let data = serde_json::json!({
             "version": CURRENT_VERSION,
             "best_times": best_times,
             "best_total_time": best_total_time,
         });
-        
-        if let Err(e) = fs::write(&path, serde_json::to_string_pretty(&data).unwrap()) {
-            eprintln!("Failed to save best times: {}", e);
-        }
+
+        // Persistence backend differs per host (file on desktop, localStorage in the browser).
+        platform::store_best_times(&serde_json::to_string_pretty(&data).unwrap());
     }
-    
+
     pub fn load_best_times() -> (Vec<Option<f64>>, Option<f64>) {
-        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        path.pop(); // Go from src-tauri to app/
-        path.push("best_times.json");
-        
         const CURRENT_VERSION: &str = "1.3.0";
-        
-        if let Ok(content) = fs::read_to_string(&path) {
+
+        if let Some(content) = platform::load_best_times() {
             if let Ok(data) = serde_json::from_str::<serde_json::Value>(&content) {
                 // Check version - if it doesn't match, reset best times
                 let file_version = data["version"].as_str().unwrap_or("");
@@ -228,17 +215,8 @@ impl GameState {
     }
     
     fn save_maze_map(maze: &Maze, start: (usize, usize), end: (usize, usize)) {
-        use std::fs::File;
-        use std::io::Write;
-        use std::path::PathBuf;
-        
-        // Get the app directory (go up from src-tauri to app/)
-        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        path.pop(); // Go from src-tauri to app/
-        path.push("maze_map.txt");
-        
         let mut output = String::new();
-        
+
         // Generate the map
         for y in 0..maze.height {
             for x in 0..maze.width {
@@ -254,15 +232,9 @@ impl GameState {
             }
             output.push('\n');
         }
-        
-        // Write to file
-        if let Ok(mut file) = File::create(&path) {
-            if let Err(e) = file.write_all(output.as_bytes()) {
-                eprintln!("Failed to write maze map: {}", e);
-            }
-        } else {
-            eprintln!("Failed to create maze map file at: {:?}", path);
-        }
+
+        // Debug aid: written to disk on desktop, ignored in the browser.
+        platform::store_maze_map(&output);
     }
 
     pub fn update(&mut self, input: &PlayerInput) {
@@ -348,10 +320,7 @@ impl GameState {
             self.player_y = self.exit_y - dy_to_exit * 0.1;
             
             // Record completion time for this level
-            let current_time = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs_f64();
+            let current_time = platform::now_secs();
             let level_time = current_time - self.level_start_time;
             self.level_completion_time = Some(level_time);
             
@@ -640,10 +609,7 @@ impl GameState {
         }
         
         // Overlay start message that flashes for 3 seconds
-        let current_time = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs_f64();
+        let current_time = platform::now_secs();
         let elapsed = current_time - self.level_start_time;
         if elapsed < 3.0 {
             // Flash: show for 0.5s, hide for 0.3s, repeat
