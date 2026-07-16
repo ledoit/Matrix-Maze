@@ -10,9 +10,10 @@
 <body>
     <div id="app">
         <div id="level-indicator">Level 1</div>
+        <button id="pause-btn" type="button" aria-label="Pause game">Pause</button>
         <div id="viewport"></div>
         <div id="controls">
-            <p>WASD: Move | Q/E: Turn | SPACE: Next Level/Play Again (after win)</p>
+            <p>WASD: Move | Q/E: Turn | SPACE or tap: Next Level (after win)</p>
         </div>
     </div>
     <!-- Touch controls (mobile web only, shown via pointer:coarse media query) -->
@@ -29,6 +30,9 @@
             <button type="button" class="touch-btn turn-left" data-key="q" aria-label="Turn left">&#9664;</button>
             <button type="button" class="touch-btn turn-right" data-key="e" aria-label="Turn right">&#9654;</button>
         </div>
+    </div>
+    <div id="rotate-prompt" aria-live="polite">
+        Rotate your device to landscape for the best experience.
     </div>
     <script type="module" src="/src/main.js"></script>
 </body>

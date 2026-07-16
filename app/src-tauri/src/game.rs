@@ -520,7 +520,7 @@ impl GameState {
                 "Best: --:--".to_string()
             };
             
-            let next_level_str = "Press SPACE to continue";
+            let next_level_str = "Press SPACE or tap to continue";
             
             let art_height = ascii_art.len();
             let art_start_row = (height.saturating_sub(art_height + 4)) / 2;
@@ -741,7 +741,7 @@ impl GameState {
             format!("Total: {}", total_time_str),
             format!("Best total: {}", best_total_str),
             String::new(), // Empty line
-            "Press SPACE to play again".to_string(),
+            "Press SPACE or tap to play again".to_string(),
         ];
         
         // Calculate starting row (center vertically, accounting for ASCII art)

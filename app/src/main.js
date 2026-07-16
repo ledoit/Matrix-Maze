@@ -2,6 +2,9 @@ import { createBackend } from './backend.js';
 import { LEVEL_COLORS } from './constants.js';
 import { AdaptiveMusic } from './music.js';
 
+const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+const isMobileWeb = !window.__TAURI__ && (isCoarsePointer || window.innerWidth <= 900);
+
 // Initialize colors from constants - sets CSS variables
 function updateColorRgbValues() {
     const root = document.documentElement;
@@ -43,8 +46,11 @@ let pausedAt = null; // wall-clock seconds when the current pause began (for tim
 let viewport = null;
 let levelIndicator = null;
 let controls = null;
+let pauseBtn = null;
+let rotatePrompt = null;
 let viewportWidth = 120;
 let viewportHeight = 40;
+let advancingLevel = false;
 const music = new AdaptiveMusic();
 
 // Initialize game
@@ -55,6 +61,8 @@ async function init() {
     viewport = document.getElementById('viewport');
     levelIndicator = document.getElementById('level-indicator');
     controls = document.getElementById('controls');
+    pauseBtn = document.getElementById('pause-btn');
+    rotatePrompt = document.getElementById('rotate-prompt');
     if (!viewport) {
         console.error('Viewport element not found');
         return;
@@ -66,34 +74,15 @@ async function init() {
 
     // Wire up on-screen touch controls for mobile web
     setupTouchControls();
+    setupOrientationHandling();
     
-    // Set up FPS-style mouse look using Pointer Lock API
-    viewport.addEventListener('click', async () => {
-        // Ensure viewport has focus when clicked
-        viewport.focus();
-        await music.startIfNeeded();
-
-        // On the win screen a tap advances to the next level / restarts. This is the touch
-        // equivalent of pressing SPACE, so mobile players (who have no keyboard) can progress.
-        try {
-            if (gameState) {
-                const stateObj = JSON.parse(gameState);
-                if (stateObj && stateObj.has_won) {
-                    gameState = await backend.nextLevel(gameState);
-                    viewport.focus();
-                    return;
-                }
-            }
-        } catch (err) {
-            // Fall through to pointer lock on parse errors.
+    viewport.addEventListener('click', handleViewportActivate);
+    viewport.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 1) {
+            e.preventDefault();
+            handleViewportActivate();
         }
-
-        try {
-            await viewport.requestPointerLock();
-        } catch (err) {
-            console.warn('Pointer lock failed:', err);
-        }
-    });
+    }, { passive: false });
     
     // Ensure viewport regains focus if it loses it (especially important on win screen)
     viewport.addEventListener('blur', () => {
@@ -149,6 +138,8 @@ async function init() {
             pausedAt = performance.now() / 1000.0;
             window.addEventListener('message', handleShellMessage);
         }
+        setupPauseButton();
+        refreshPauseButtonVisibility();
 
         const stateJson = await backend.initGame();
         gameState = stateJson;
@@ -200,6 +191,119 @@ function setupTouchControls() {
     });
 }
 
+function parseGameState() {
+    if (!gameState) return null;
+    try {
+        return JSON.parse(gameState);
+    } catch {
+        return null;
+    }
+}
+
+async function advanceIfWon() {
+    if (advancingLevel) return false;
+    const gameStateObj = parseGameState();
+    if (!gameStateObj?.has_won) return false;
+
+    advancingLevel = true;
+    try {
+        gameState = await backend.nextLevel(gameState);
+        if (viewport) viewport.focus();
+        return true;
+    } finally {
+        advancingLevel = false;
+    }
+}
+
+async function handleViewportActivate() {
+    if (!viewport) return;
+    viewport.focus();
+    await music.startIfNeeded();
+    if (await advanceIfWon()) return;
+    if (paused) return;
+    if (isCoarsePointer) return;
+    try {
+        await viewport.requestPointerLock();
+    } catch (err) {
+        console.warn('Pointer lock failed:', err);
+    }
+}
+
+function setupPauseButton() {
+    if (!pauseBtn || pauseBtn.dataset.bound) return;
+    pauseBtn.dataset.bound = '1';
+    pauseBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (paused && !shellControlled) {
+            await resumeFromInlinePause();
+            return;
+        }
+        pauseGame();
+    });
+}
+
+function refreshPauseButtonVisibility() {
+    if (!pauseBtn) return;
+    pauseBtn.classList.toggle('visible', shellControlled || isMobileWeb || backend?.isDesktop);
+}
+
+async function setAudioPaused(isPaused) {
+    if (isPaused) await music.suspend();
+    else await music.resume();
+}
+
+function applyPauseState() {
+    paused = true;
+    pausedAt = performance.now() / 1000.0;
+    if (document.pointerLockElement) document.exitPointerLock();
+    unlockLandscape();
+    updatePlayingUi(false);
+    setAudioPaused(true);
+}
+
+function pauseGame() {
+    if (shellControlled) {
+        pauseToShell();
+        return;
+    }
+    if (paused) return;
+    applyPauseState();
+}
+
+function setupOrientationHandling() {
+    window.addEventListener('orientationchange', updateOrientationPrompt);
+    window.addEventListener('resize', updateOrientationPrompt);
+}
+
+function updateOrientationPrompt() {
+    if (!rotatePrompt) return;
+    const portrait = window.matchMedia('(orientation: portrait)').matches;
+    const shouldShow = isMobileWeb && hasStarted && !paused && portrait;
+    rotatePrompt.classList.toggle('visible', shouldShow);
+    document.body.classList.toggle('playing-portrait', shouldShow);
+}
+
+async function lockLandscapeIfMobile() {
+    if (!isMobileWeb || !screen.orientation?.lock) return;
+    try {
+        await screen.orientation.lock('landscape');
+    } catch (err) {
+        console.warn('Landscape lock unavailable:', err);
+    }
+}
+
+function unlockLandscape() {
+    try {
+        screen.orientation?.unlock?.();
+    } catch (_) {}
+}
+
+function updatePlayingUi(playing) {
+    if (pauseBtn) pauseBtn.textContent = playing ? 'Pause' : 'Resume';
+    if (playing && isMobileWeb) lockLandscapeIfMobile();
+    updateOrientationPrompt();
+}
+
 // --- Embedded-shell play/pause coordination (web landing only) ---
 
 // Notifies the parent landing shell of a state change ('ready' | 'playing' | 'paused').
@@ -238,17 +342,28 @@ async function startPlaying() {
     paused = false;
     lastFrameTime = performance.now() / 1000.0; // avoid a large delta on the first live frame
     if (viewport) viewport.focus();
+    updatePlayingUi(true);
+    await setAudioPaused(false);
     postToShell('playing');
+}
+
+async function resumeFromInlinePause() {
+    if (!paused) return;
+    if (pausedAt !== null) {
+        gameState = shiftLevelStart(gameState, performance.now() / 1000.0 - pausedAt);
+    }
+    pausedAt = null;
+    paused = false;
+    lastFrameTime = performance.now() / 1000.0;
+    if (viewport) viewport.focus();
+    updatePlayingUi(true);
+    await setAudioPaused(false);
 }
 
 // Pauses play and asks the shell to reveal its sidebar/PLAY overlay again.
 function pauseToShell() {
     if (paused) return;
-    paused = true;
-    pausedAt = performance.now() / 1000.0;
-    if (document.pointerLockElement) {
-        document.exitPointerLock();
-    }
+    applyPauseState();
     postToShell('paused');
 }
 
@@ -336,7 +451,7 @@ async function gameLoop() {
     } catch (e) {
         // If parsing fails, continue with update
     }
-    
+    const wasWonBeforeUpdate = gameStateObj?.has_won ?? false;
     // Get input (only if not won)
     const input = {
         forward: gameStateObj?.has_won ? false : keys.w,
@@ -369,6 +484,11 @@ async function gameLoop() {
 
         // Update game state in case freeze frame was captured
         gameState = updatedState;
+
+        const stateAfterUpdate = parseGameState();
+        if (!wasWonBeforeUpdate && stateAfterUpdate?.has_won) {
+            music.playLevelComplete(stateAfterUpdate.current_level || 1);
+        }
 
         // Display frame
         displayFrame(frame);
@@ -459,26 +579,8 @@ window.addEventListener('keydown', async (e) => {
     // Check if game is won and space is pressed for restart
     if (e.key === ' ' || e.key === 'Spacebar') {
         try {
-            // Parse game state
-            let gameStateObj = null;
-            try {
-                gameStateObj = JSON.parse(gameState);
-            } catch (err) {
-                return;
-            }
-            
-            // Only proceed if game is won
-            if (gameStateObj && gameStateObj.has_won) {
+            if (await advanceIfWon()) {
                 e.preventDefault();
-                
-                // Advance to next level or restart
-                gameState = await backend.nextLevel(gameState);
-                console.log('Advanced to next level or restarted');
-                
-                // Ensure viewport maintains focus after level transition
-                if (viewport) {
-                    viewport.focus();
-                }
                 return;
             }
         } catch (error) {
@@ -517,9 +619,10 @@ window.addEventListener('keydown', async (e) => {
                 pauseToShell();
             } else if (document.pointerLockElement) {
                 document.exitPointerLock();
-            } else if (backend?.isDesktop) {
-                // Desktop only — the browser has no window to close.
-                backend.closeWindow();
+            } else if (paused) {
+                await resumeFromInlinePause();
+            } else {
+                pauseGame();
             }
             e.preventDefault();
             break;

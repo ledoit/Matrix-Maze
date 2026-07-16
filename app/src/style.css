@@ -277,3 +277,49 @@ body {
     transform: scale(0.94);
 }
 
+#pause-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 60;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #0f0;
+    background: rgba(0, 20, 0, 0.75);
+    border: 2px solid #0f0;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+#pause-btn.visible {
+    display: block;
+}
+
+#rotate-prompt {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.92);
+    color: #0f0;
+    font-size: 1.1em;
+}
+
+#rotate-prompt.visible {
+    display: flex;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+    body.playing-portrait #rotate-prompt.visible {
+        display: flex;
+    }
+}
+
