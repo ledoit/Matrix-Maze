@@ -148,10 +148,12 @@ or frontend changes.
 
 ### Deployment / routes
 
-- `/` — **the product URL**: fullscreen shell with sidebar (Updates, Download, How To Play) and embedded game. Click **Play** to start; **Esc** pauses and brings the sidebar back. Desktop downloads use the GitHub releases proxy in `api/`.
-- `/game/` — internal iframe target only (committed Vite build in `game/`). Legacy `/play/` and `/dev/` redirect to `/`.
+- **Prod:** https://matrix-maze.menhir-holdings.com/ — sidebar + Play; game embedded
+- `/game/` — iframe-only WASM build (not a public entry point)
+- Legacy `/play/` and `/dev/` redirect to `/`
+- Deploy: push `main` → Vercel. In-flight: PR preview URL (do not redirect `*.vercel.app` previews)
 
-Vercel serves the repo root statically (`vercel.json` `outputDirectory: "."`). In-flight changes are tested via **Vercel PR preview URLs** — see Menhir agent workflow (`Menhir Holdings/.cursor/rules/menhir-dev-deploy.mdc`).
+Hub ops (DNS / Vercel lattice): [stonehenge docs/DNS.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/DNS.md), [docs/VERCEL.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/VERCEL.md).
 
 ## Music (Kaiser)
 
