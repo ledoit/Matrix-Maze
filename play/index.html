@@ -6,8 +6,8 @@
     <!-- Game name: "Matrix Maze" - if changing, update src/constants.js -->
     <title>Matrix Maze</title>
     
-  <script type="module" crossorigin src="/play/assets/index-65587b52.js"></script>
-  <link rel="stylesheet" href="/play/assets/index-61d0c2d8.css">
+  <script type="module" crossorigin src="/play/assets/index-9296093d.js"></script>
+  <link rel="stylesheet" href="/play/assets/index-b4531f0a.css">
 </head>
 <body>
     <div id="app">
@@ -15,6 +15,21 @@
         <div id="viewport"></div>
         <div id="controls">
             <p>WASD: Move | Q/E: Turn | SPACE: Next Level/Play Again (after win)</p>
+        </div>
+    </div>
+    <!-- Touch controls (mobile web only, shown via pointer:coarse media query) -->
+    <div id="touch-controls" aria-hidden="true">
+        <!-- Bottom-left: movement laid out like keyboard arrow keys (forward/back + strafe) -->
+        <div class="touch-cluster touch-move">
+            <button type="button" class="touch-btn move-forward" data-key="w" aria-label="Move forward">&#9650;</button>
+            <button type="button" class="touch-btn move-left" data-key="a" aria-label="Strafe left">&#9664;</button>
+            <button type="button" class="touch-btn move-back" data-key="s" aria-label="Move backward">&#9660;</button>
+            <button type="button" class="touch-btn move-right" data-key="d" aria-label="Strafe right">&#9654;</button>
+        </div>
+        <!-- Bottom-right: turn/rotate view left and right -->
+        <div class="touch-cluster touch-turn">
+            <button type="button" class="touch-btn turn-left" data-key="q" aria-label="Turn left">&#9664;</button>
+            <button type="button" class="touch-btn turn-right" data-key="e" aria-label="Turn right">&#9654;</button>
         </div>
     </div>
     
