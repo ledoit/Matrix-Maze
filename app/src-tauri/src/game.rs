@@ -12,14 +12,14 @@ pub struct GameState {
     pub exit_x: f64,
     pub exit_y: f64,
     pub has_won: bool,
-    pub current_level: u8, // 1-5
+    pub current_level: u8, // 1-8
     pub level_start_time: f64, // Time when current level started (seconds since epoch)
     pub level_completion_time: Option<f64>, // Time for current level (seconds elapsed)
     pub total_time: f64, // Cumulative time across all levels
-    pub run_times: Vec<Option<f64>>, // Actual completion times for each level in this run (5 elements)
-    pub best_times: Vec<Option<f64>>, // Best time for each level (5 elements)
-    pub best_total_time: Option<f64>, // Best time for all 5 levels combined
-    pub new_record_level: Option<u8>, // Level where new record was set (1-5, or None)
+    pub run_times: Vec<Option<f64>>, // Actual completion times for each level in this run (8 elements)
+    pub best_times: Vec<Option<f64>>, // Best time for each level (8 elements)
+    pub best_total_time: Option<f64>, // Best time for all 8 levels combined
+    pub new_record_level: Option<u8>, // Level where new record was set (1-8, or None)
     pub new_record_total: bool, // True if new total record was set
 }
 
@@ -71,11 +71,11 @@ pub struct PlayerInput {
 impl GameState {
     pub fn new() -> Self {
         let (best_times, best_total_time) = Self::load_best_times();
-        Self::new_level(1, vec![None; 5], best_times, best_total_time, 0.0)
+        Self::new_level(1, vec![None; 8], best_times, best_total_time, 0.0)
     }
     
     pub fn next_level(&self) -> Self {
-        if self.current_level < 5 {
+        if self.current_level < 8 {
             // Store the current level's completion time in run_times
             let mut new_run_times = self.run_times.clone();
             let level_idx = (self.current_level - 1) as usize;
@@ -101,7 +101,7 @@ impl GameState {
     }
     
     pub fn new_level(level: u8, run_times: Vec<Option<f64>>, best_times: Vec<Option<f64>>, best_total_time: Option<f64>, total_time: f64) -> Self {
-        let maze_size = (7 + level as usize) as usize; // 8, 9, 10, 11, 12
+        let maze_size = (7 + level as usize) as usize; // 8, 9, 10, 11, 12, 13, 14, 15
         let maze = Maze::new(maze_size, maze_size);
         // Use the random exit position from maze generation
         let exit_x = maze.exit.0 as f64 + 0.5;
@@ -163,7 +163,7 @@ impl GameState {
     }
     
     pub fn save_best_times(best_times: &[Option<f64>], best_total_time: Option<f64>) {
-        const CURRENT_VERSION: &str = "1.3.0";
+        const CURRENT_VERSION: &str = "1.4.0";
 
         let data = serde_json::json!({
             "version": CURRENT_VERSION,
@@ -176,7 +176,7 @@ impl GameState {
     }
 
     pub fn load_best_times() -> (Vec<Option<f64>>, Option<f64>) {
-        const CURRENT_VERSION: &str = "1.3.0";
+        const CURRENT_VERSION: &str = "1.4.0";
 
         if let Some(content) = platform::load_best_times() {
             if let Ok(data) = serde_json::from_str::<serde_json::Value>(&content) {
@@ -184,7 +184,7 @@ impl GameState {
                 let file_version = data["version"].as_str().unwrap_or("");
                 if file_version != CURRENT_VERSION {
                     // Version mismatch - reset best times
-                    return (vec![None; 5], None);
+                    return (vec![None; 8], None);
                 }
                 
                 let best_times: Vec<Option<f64>> = data["best_times"]
@@ -200,7 +200,7 @@ impl GameState {
                             })
                             .collect()
                     })
-                    .unwrap_or_else(|| vec![None; 5]);
+                    .unwrap_or_else(|| vec![None; 8]);
                 let best_total_time = if data["best_total_time"].is_null() {
                     None
                 } else {
@@ -211,7 +211,7 @@ impl GameState {
         }
         
         // Return defaults if file doesn't exist or can't be parsed
-        (vec![None; 5], None)
+        (vec![None; 8], None)
     }
     
     fn save_maze_map(maze: &Maze, start: (usize, usize), end: (usize, usize)) {
@@ -343,8 +343,8 @@ impl GameState {
             // Update total time
             self.total_time += level_time;
             
-            // Update best total time if this is level 5 and we completed all levels
-            if self.current_level == 5 {
+            // Update best total time if this is the final level and we completed all levels
+            if self.current_level == 8 {
                 if self.best_total_time.is_none() || 
                    self.best_total_time.unwrap() > self.total_time {
                     self.best_total_time = Some(self.total_time);
@@ -483,12 +483,12 @@ impl GameState {
         
         // Overlay win message if player has won (using ASCII art)
         if self.has_won {
-            // Special layout for level 5 - two columns
-            if self.current_level == 5 {
-                return self.render_level_5_win_screen(width, height, &frame);
+            // Special summary layout for the final level
+            if self.current_level == 8 {
+                return self.render_final_win_screen(width, height, &frame);
             }
             
-            // ASCII art for "LEVEL COMPLETE!" - for levels 1-4
+            // ASCII art for "LEVEL COMPLETE!" - for levels 1-7
             let ascii_art = vec![
                 "██╗     ███████╗██╗   ██╗███████╗██╗         ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗████████╗███████╗",
                 "██║     ██╔════╝██║   ██║██╔════╝██║        ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║     ██╔════╝╚══██╔══╝██╔════╝",
@@ -646,7 +646,7 @@ impl GameState {
         frame
     }
     
-    fn render_level_5_win_screen(&self, width: usize, height: usize, frame: &str) -> String {
+    fn render_final_win_screen(&self, width: usize, height: usize, frame: &str) -> String {
         // ASCII art for "LEVEL COMPLETE!" - always show
         let ascii_art = vec![
             "██╗     ███████╗██╗   ██╗███████╗██╗         ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗████████╗███████╗",
@@ -657,8 +657,8 @@ impl GameState {
             "╚══════╝╚══════╝  ╚═══╝  ╚══════╝╚══════╝    ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝   ╚═╝   ╚══════╝",
         ];
         
-        // Format level 5 time
-        let level_5_time_str = if let Some(time) = self.level_completion_time {
+        // Format final level time
+        let final_level_time_str = if let Some(time) = self.level_completion_time {
             let minutes = (time as u64) / 60;
             let seconds = (time as u64) % 60;
             let milliseconds = ((time % 1.0) * 100.0) as u64;
@@ -668,16 +668,16 @@ impl GameState {
         };
         
         // Check for personal best and append to time
-        let personal_best_suffix = if self.new_record_level == Some(5) || self.new_record_total {
+        let personal_best_suffix = if self.new_record_level == Some(8) || self.new_record_total {
             " PERSONAL BEST!"
         } else {
             ""
         };
-        let time_with_pb = format!("Time: {}{}", level_5_time_str, personal_best_suffix);
+        let time_with_pb = format!("Time: {}{}", final_level_time_str, personal_best_suffix);
         
-        // Format best time for level 5
-        let level_5_best_str = if self.best_times.len() > 4 && self.best_times[4].is_some() {
-            let best = self.best_times[4].unwrap();
+        // Format best time for the final level (level 8)
+        let final_best_str = if self.best_times.len() > 7 && self.best_times[7].is_some() {
+            let best = self.best_times[7].unwrap();
             let minutes = (best as u64) / 60;
             let seconds = (best as u64) % 60;
             let milliseconds = ((best % 1.0) * 100.0) as u64;
@@ -686,7 +686,7 @@ impl GameState {
             "--:--".to_string()
         };
         
-        // Format times for levels 1-4 (use actual run times, not best times)
+        // Format times for levels 1-7 (use actual run times, not best times)
         let format_time = |time_opt: Option<f64>| -> String {
             if let Some(time) = time_opt {
                 let minutes = (time as u64) / 60;
@@ -698,10 +698,9 @@ impl GameState {
             }
         };
         
-        let level_1_time = if self.run_times.len() > 0 { format_time(self.run_times[0]) } else { "--:--".to_string() };
-        let level_2_time = if self.run_times.len() > 1 { format_time(self.run_times[1]) } else { "--:--".to_string() };
-        let level_3_time = if self.run_times.len() > 2 { format_time(self.run_times[2]) } else { "--:--".to_string() };
-        let level_4_time = if self.run_times.len() > 3 { format_time(self.run_times[3]) } else { "--:--".to_string() };
+        let per_level_time = |idx: usize| -> String {
+            if self.run_times.len() > idx { format_time(self.run_times[idx]) } else { "--:--".to_string() }
+        };
         
         // Format total time
         let total_time_str = {
@@ -729,17 +728,19 @@ impl GameState {
         // All texts in single column (centered)
         let texts = vec![
             time_with_pb,
-            format!("Best: {}", level_5_best_str),
+            format!("Best: {}", final_best_str),
             String::new(), // Empty line
-            format!("Level 1: {}", level_1_time),
-            format!("Level 2: {}", level_2_time),
-            format!("Level 3: {}", level_3_time),
-            format!("Level 4: {}", level_4_time),
-            String::new(), // Empty line between level 4 and total
+            format!("Level 1: {}", per_level_time(0)),
+            format!("Level 2: {}", per_level_time(1)),
+            format!("Level 3: {}", per_level_time(2)),
+            format!("Level 4: {}", per_level_time(3)),
+            format!("Level 5: {}", per_level_time(4)),
+            format!("Level 6: {}", per_level_time(5)),
+            format!("Level 7: {}", per_level_time(6)),
+            String::new(), // Empty line between levels and total
             format!("Total: {}", total_time_str),
             format!("Best total: {}", best_total_str),
             String::new(), // Empty line
-            String::new(), // Empty line (2 total)
             "Press SPACE to play again".to_string(),
         ];
         

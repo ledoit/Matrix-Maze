@@ -80,6 +80,24 @@ body {
     box-shadow: 0 0 20px hsla(var(--level-5-h), var(--level-5-s), var(--level-5-l), 0.3);
 }
 
+#viewport.level-6 {
+    color: var(--level-6-color);
+    border-color: var(--level-6-color);
+    box-shadow: 0 0 20px hsla(var(--level-6-h), var(--level-6-s), var(--level-6-l), 0.3);
+}
+
+#viewport.level-7 {
+    color: var(--level-7-color);
+    border-color: var(--level-7-color);
+    box-shadow: 0 0 20px hsla(var(--level-7-h), var(--level-7-s), var(--level-7-l), 0.3);
+}
+
+#viewport.level-8 {
+    color: var(--level-8-color);
+    border-color: var(--level-8-color);
+    box-shadow: 0 0 20px hsla(var(--level-8-h), var(--level-8-s), var(--level-8-l), 0.3);
+}
+
 #controls {
     margin-top: 20px;
     text-align: center;
@@ -118,6 +136,21 @@ body {
     text-shadow: 0 0 10px hsla(var(--level-5-h), var(--level-5-s), var(--level-5-l), 0.5);
 }
 
+#controls.level-6 {
+    color: var(--level-6-color);
+    text-shadow: 0 0 10px hsla(var(--level-6-h), var(--level-6-s), var(--level-6-l), 0.5);
+}
+
+#controls.level-7 {
+    color: var(--level-7-color);
+    text-shadow: 0 0 10px hsla(var(--level-7-h), var(--level-7-s), var(--level-7-l), 0.5);
+}
+
+#controls.level-8 {
+    color: var(--level-8-color);
+    text-shadow: 0 0 10px hsla(var(--level-8-h), var(--level-8-s), var(--level-8-l), 0.5);
+}
+
 #level-indicator {
     margin-bottom: 10px;
     text-align: center;
@@ -151,5 +184,20 @@ body {
 #level-indicator.level-5 {
     color: var(--level-5-color);
     text-shadow: 0 0 10px hsla(var(--level-5-h), var(--level-5-s), var(--level-5-l), 0.5);
+}
+
+#level-indicator.level-6 {
+    color: var(--level-6-color);
+    text-shadow: 0 0 10px hsla(var(--level-6-h), var(--level-6-s), var(--level-6-l), 0.5);
+}
+
+#level-indicator.level-7 {
+    color: var(--level-7-color);
+    text-shadow: 0 0 10px hsla(var(--level-7-h), var(--level-7-s), var(--level-7-l), 0.5);
+}
+
+#level-indicator.level-8 {
+    color: var(--level-8-color);
+    text-shadow: 0 0 10px hsla(var(--level-8-h), var(--level-8-s), var(--level-8-l), 0.5);
 }
 

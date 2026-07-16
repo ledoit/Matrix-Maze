@@ -99,8 +99,9 @@ async function init() {
     // Track mouse movement when pointer is locked
     document.addEventListener('mousemove', (e) => {
         if (document.pointerLockElement === viewport) {
-            // movementX gives relative movement when pointer is locked
-            mouseDeltaX = e.movementX / 100.0; // Scale down for smoother turning
+            // movementX gives relative movement when pointer is locked.
+            // Sensitivity boosted 6x (was / 100.0) for faster turning on the web build.
+            mouseDeltaX = (e.movementX / 100.0) * 6.0;
         }
     });
     
