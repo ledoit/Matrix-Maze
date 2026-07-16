@@ -1,19 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
-export function restart_game(): string;
+/**
+ * Routes Rust panics to the browser console so a bad frame surfaces a real message
+ * instead of an opaque `unreachable` trap. Called once by the JS loader.
+ */
+export function start(): void;
+export function init_game(): string;
 export function update_game(state_json: string, input_json: string): string;
 /**
  * Returns `[frame, updated_state_json]` — the second element carries any state the render
  * step mutated, matching the tuple the Tauri command returns.
  */
 export function render_frame(state_json: string, width: number, height: number): string[];
-/**
- * Routes Rust panics to the browser console so a bad frame surfaces a real message
- * instead of an opaque `unreachable` trap. Called once by the JS loader.
- */
-export function start(): void;
+export function restart_game(): string;
 export function next_level(state_json: string): string;
-export function init_game(): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 

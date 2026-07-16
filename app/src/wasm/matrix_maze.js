@@ -102,13 +102,21 @@ function getDataViewMemory0() {
     return cachedDataViewMemory0;
 }
 /**
+ * Routes Rust panics to the browser console so a bad frame surfaces a real message
+ * instead of an opaque `unreachable` trap. Called once by the JS loader.
+ */
+export function start() {
+    wasm.start();
+}
+
+/**
  * @returns {string}
  */
-export function restart_game() {
+export function init_game() {
     let deferred1_0;
     let deferred1_1;
     try {
-        const ret = wasm.restart_game();
+        const ret = wasm.init_game();
         deferred1_0 = ret[0];
         deferred1_1 = ret[1];
         return getStringFromWasm0(ret[0], ret[1]);
@@ -167,11 +175,19 @@ export function render_frame(state_json, width, height) {
 }
 
 /**
- * Routes Rust panics to the browser console so a bad frame surfaces a real message
- * instead of an opaque `unreachable` trap. Called once by the JS loader.
+ * @returns {string}
  */
-export function start() {
-    wasm.start();
+export function restart_game() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.restart_game();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
 }
 
 /**
@@ -190,22 +206,6 @@ export function next_level(state_json) {
         return getStringFromWasm0(ret[0], ret[1]);
     } finally {
         wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * @returns {string}
- */
-export function init_game() {
-    let deferred1_0;
-    let deferred1_1;
-    try {
-        const ret = wasm.init_game();
-        deferred1_0 = ret[0];
-        deferred1_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
     }
 }
 
