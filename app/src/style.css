@@ -201,3 +201,79 @@ body {
     text-shadow: 0 0 10px hsla(var(--level-8-h), var(--level-8-s), var(--level-8-l), 0.5);
 }
 
+/* --- Mobile touch controls --- */
+/* Hidden by default; only shown on touch (coarse-pointer) devices. */
+#touch-controls {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    /* The keyboard hint is irrelevant on touch and would sit under the buttons. */
+    #controls {
+        display: none;
+    }
+
+    #touch-controls {
+        display: flex;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 20px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+        justify-content: space-between;
+        align-items: flex-end;
+        pointer-events: none; /* let the empty middle pass taps through to the viewport */
+        z-index: 50;
+    }
+}
+
+.touch-cluster {
+    display: grid;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+/* Bottom-left: inverted-T movement pad laid out like keyboard arrow keys */
+.touch-move {
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 56px);
+}
+
+.touch-move .move-forward { grid-column: 2; grid-row: 1; }
+.touch-move .move-left    { grid-column: 1; grid-row: 2; }
+.touch-move .move-back    { grid-column: 2; grid-row: 2; }
+.touch-move .move-right   { grid-column: 3; grid-row: 2; }
+
+/* Bottom-right: turn/rotate pair, aligned with the movement pad's bottom row */
+.touch-turn {
+    grid-template-columns: repeat(2, 56px);
+    grid-template-rows: 56px;
+}
+
+.touch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+    line-height: 1;
+    font-weight: bold;
+    color: #0f0;
+    background: rgba(0, 20, 0, 0.55);
+    border: 2px solid #0f0;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.35);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    transition: background 0.1s ease, transform 0.1s ease;
+}
+
+.touch-btn.active {
+    background: rgba(0, 255, 0, 0.35);
+    transform: scale(0.94);
+}
+

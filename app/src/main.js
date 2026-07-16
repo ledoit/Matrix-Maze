@@ -63,12 +63,31 @@ async function init() {
     // Make viewport focusable for keyboard input
     viewport.setAttribute('tabindex', '0');
     viewport.focus();
+
+    // Wire up on-screen touch controls for mobile web
+    setupTouchControls();
     
     // Set up FPS-style mouse look using Pointer Lock API
     viewport.addEventListener('click', async () => {
         // Ensure viewport has focus when clicked
         viewport.focus();
         await music.startIfNeeded();
+
+        // On the win screen a tap advances to the next level / restarts. This is the touch
+        // equivalent of pressing SPACE, so mobile players (who have no keyboard) can progress.
+        try {
+            if (gameState) {
+                const stateObj = JSON.parse(gameState);
+                if (stateObj && stateObj.has_won) {
+                    gameState = await backend.nextLevel(gameState);
+                    viewport.focus();
+                    return;
+                }
+            }
+        } catch (err) {
+            // Fall through to pointer lock on parse errors.
+        }
+
         try {
             await viewport.requestPointerLock();
         } catch (err) {
@@ -145,6 +164,40 @@ async function init() {
     } catch (error) {
         console.error('Failed to initialize game:', error);
     }
+}
+
+// Wires the on-screen mobile buttons to the same `keys` flags the keyboard uses. Each button
+// presses its key on pointerdown and releases it on pointerup/leave/cancel, so holding a button
+// produces continuous movement and multiple buttons can be held at once (multi-touch).
+function setupTouchControls() {
+    const buttons = document.querySelectorAll('#touch-controls .touch-btn');
+    buttons.forEach((btn) => {
+        const key = btn.getAttribute('data-key');
+        if (!key || !(key in keys)) return;
+
+        const press = (e) => {
+            e.preventDefault();
+            // Starting the audio + game requires a user gesture; a control tap counts.
+            if (paused && shellControlled) {
+                startPlaying();
+            }
+            music.startIfNeeded();
+            keys[key] = true;
+            btn.classList.add('active');
+        };
+        const release = (e) => {
+            if (e) e.preventDefault();
+            keys[key] = false;
+            btn.classList.remove('active');
+        };
+
+        btn.addEventListener('pointerdown', press);
+        btn.addEventListener('pointerup', release);
+        btn.addEventListener('pointerleave', release);
+        btn.addEventListener('pointercancel', release);
+        // Prevent the browser's synthetic mouse/scroll/context behaviors on touch.
+        btn.addEventListener('contextmenu', (e) => e.preventDefault());
+    });
 }
 
 // --- Embedded-shell play/pause coordination (web landing only) ---
