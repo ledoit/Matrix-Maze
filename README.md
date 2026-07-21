@@ -80,7 +80,7 @@ The built application will be in `app/src-tauri/target/release/` (or `app/src-ta
 ```
 .
 ├── index.html             # Landing page (fullscreen playable shell, deployed to Vercel)
-├── play/                  # Generated browser game build served at /play (see below)
+├── game/                  # Generated browser game build (iframe embed at /game/)
 ├── vercel.json            # Vercel deployment config
 ├── api/                   # Serverless GitHub releases proxy (landing downloads)
 ├── BUILD.md               # Release build checklist
@@ -139,22 +139,21 @@ Then, from `app/`:
 npm install
 npm run build:wasm     # Rust -> wasm, regenerates app/src/wasm/ (only when Rust changes)
 npm run dev            # local dev server (http://localhost:1420)
-npm run build:web      # production browser build -> ../play (served at /play)
+npm run build:web      # production browser build -> ../game (iframe embed)
 ```
 
-`app/src/wasm/` and `play/` are committed build artifacts, so the Vite build and Vercel do
+`app/src/wasm/` and `game/` are committed build artifacts, so the Vite build and Vercel do
 **not** need a Rust toolchain — only re-run `build:wasm` / `build:web` when the Rust game logic
 or frontend changes.
 
 ### Deployment / routes
 
-- `/` — landing page: a fullscreen playable shell that embeds the game and shows a sidebar
-  (Updates, Download, How To Play). Clicking **Play** hides the sidebar; pressing **Esc**
-  brings it back. Desktop download links still use the GitHub releases proxy in `api/`.
-- `/play/` — the standalone browser game (the Vite build in `play/`), also playable directly.
+- **Prod:** https://matrix-maze.menhir-holdings.com/ — sidebar + Play; game embedded
+- `/game/` — iframe-only WASM build (not a public entry point)
+- Legacy `/play/` and `/dev/` redirect to `/`
+- Deploy: push `main` → Vercel. In-flight: PR preview URL (do not redirect `*.vercel.app` previews)
 
-Vercel serves the repo root statically (`vercel.json` `outputDirectory: "."`), so the committed
-`play/` directory is served at `/play/` with no build-time Rust required.
+Hub ops (DNS / Vercel lattice): [stonehenge docs/DNS.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/DNS.md), [docs/VERCEL.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/VERCEL.md).
 
 ## Music (Kaiser)
 

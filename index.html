@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix Maze - 3D ASCII Labyrinth Adventure</title>
-    <script>
-      (function () {
-        var h = location.hostname;
-        if (h === "matrix-maze.menhir-holdings.com") return;
-        if (/\.vercel\.app$/.test(h)) {
-          location.replace("https://matrix-maze.menhir-holdings.com" + location.pathname + location.search + location.hash);
-        }
-      })();
-    </script>
     <style>
         * {
             margin: 0;
@@ -257,11 +248,11 @@
     </style>
 </head>
 <body>
-    <!-- The playable game (Vite/WASM build) served from /play/. -->
+    <!-- Game WASM build (iframe embed only — public URL is / with sidebar). -->
     <iframe
         id="game-frame"
         title="Matrix Maze"
-        src="/play/"
+        src="/game/"
         allow="autoplay; fullscreen; pointer-lock"
         allowfullscreen></iframe>
 
@@ -320,7 +311,7 @@
                         <div><kbd>Esc</kbd> Pause</div>
                     </div>
                 </div>
-                <p class="muted">Reach the exit of all 5 levels as fast as you can.</p>
+                <p class="muted">Reach the exit of all 8 levels as fast as you can.</p>
             </section>
 
             <div class="side-footer">

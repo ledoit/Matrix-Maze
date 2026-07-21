@@ -1,39 +1,48 @@
 # TODO List
 
-## 1. Spacebar Bug (Windows)
-**Issue**: Spacebar on level complete not working, only goes through after repeating keypress across a lot of time.
+Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7). This file mirrors open work for repo readers.
 
-**Status**: Pending
+## 1. Windows spacebar on level complete — [MT-45](https://linear.app/menhir-holdings/issue/MT-45) (In Progress)
 
-**Notes**: Windows-specific issue. Possible causes listed in `SPACEBAR_ISSUES.md`
+Spacebar on Windows fails to advance from level-complete overlay reliably.
 
+**Mitigations shipped:** tap/click on viewport advances when won; `advanceIfWon()` debounce (PR #3).
 
-## 2. Center 'Level Complete' ASCII Art
-**Issue**: Center 'level complete' ASCII art the same way the times and other messages are.
+**Notes:** See `SPACEBAR_ISSUES.md`.
 
-**Status**: Pending
+## 2. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
+Center win ASCII art the same way times and other messages are centered.
 
-## 3. Add Music and Sound Effects
-**Issue**: Add music for:
-- Lobby
-- Level complete
-- Level failed
-- Level gameplay (adaptive stems — **done** via `app/src/music.js` + Kaiser pipeline)
-- Game complete
+## 3. Music and sound effects — [MT-101](https://linear.app/menhir-holdings/issue/MT-101) (Backlog)
 
-**Sound Effects**:
-- Creature teleport SFX
+**Done:** Adaptive level gameplay stems (`app/src/music.js` + Kaiser). Level-complete stinger / pause audio on [PR #3](https://github.com/menhir-holdings/Matrix-Maze/pull/3) ([MT-99](https://linear.app/menhir-holdings/issue/MT-99)).
 
-**Status**: Partially done — adaptive level music (base / pressure / chase / dread) ships with procedural fallback when OGG missing; sync via `npm run music:sync` from Kaiser. Lobby, level-complete/fail stingers, and SFX still open.
+**Open:**
 
+- Lobby music
+- Level failed stinger
+- Game-complete stinger
+- Creature teleport SFX (blocked on [MT-46](https://linear.app/menhir-holdings/issue/MT-46))
 
-## 4. Add Chasing Creature
-**Issue**: Add a creature that:
-- Spawns behind you
-- Runs after you (same speed)
-- If it catches you, show new 'level failed' screen
-- When within a certain distance of a dead end, teleport the creature to it
-- Freeze it for a beat to give the player reaction time to turn around and keep running
+Sync stems: `npm run music:sync` from Kaiser. Preview mixes at [kaiser.menhir-holdings.com](https://kaiser.menhir-holdings.com).
 
-**Status**: Pending
+## 4. Chasing creature — [MT-46](https://linear.app/menhir-holdings/issue/MT-46) (Backlog)
+
+Creature spawns behind player, chases at same speed, fail screen on catch, dead-end teleport with freeze beat. Browser parity tracked in [MT-71](https://linear.app/menhir-holdings/issue/MT-71).
+
+## 5. Audio mute toggle — [MT-48](https://linear.app/menhir-holdings/issue/MT-48) / [MT-67](https://linear.app/menhir-holdings/issue/MT-67) (Backlog)
+
+First-gesture unlock done. Mute UI + persisted preference still open.
+
+## 6. Gold-path browser QA — [MT-65](https://linear.app/menhir-holdings/issue/MT-65) (Todo)
+
+Cold load → Play → complete all **8 levels** → finish run in Chrome, Safari, Firefox without desktop install.
+
+## 7. Perf budget — [MT-69](https://linear.app/menhir-holdings/issue/MT-69) (Backlog)
+
+Define ASCII raycast FPS floor and document WASM bundle size.
+
+## Triaged
+
+[MT-57](https://linear.app/menhir-holdings/issue/MT-57) — items above are ticketed; close when accepted.

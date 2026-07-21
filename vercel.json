@@ -1,15 +1,33 @@
 {
-  "version": 2,
   "buildCommand": null,
   "outputDirectory": ".",
   "installCommand": null,
   "framework": null,
-  "rewrites": [],
   "redirects": [
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "matrix-maze-kappa.vercel.app" }],
       "destination": "https://matrix-maze.menhir-holdings.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/play",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/play/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/dev",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/dev/:path*",
+      "destination": "/",
       "permanent": true
     }
   ]
