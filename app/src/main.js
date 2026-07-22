@@ -46,6 +46,39 @@ let controls = null;
 let viewportWidth = 120;
 let viewportHeight = 40;
 const music = new AdaptiveMusic();
+let hasWonScreen = false;
+let advancingLevel = false;
+
+function parseGameState() {
+    if (!gameState) return null;
+    try {
+        return JSON.parse(gameState);
+    } catch {
+        return null;
+    }
+}
+
+async function advanceIfWon() {
+    if (advancingLevel) return false;
+    if (!hasWonScreen) return false;
+
+    advancingLevel = true;
+    try {
+        gameState = await backend.nextLevel(gameState);
+        hasWonScreen = false;
+        if (viewport) viewport.focus();
+        return true;
+    } finally {
+        advancingLevel = false;
+    }
+}
+
+function syncWinScreenFlag(stateObj) {
+    hasWonScreen = Boolean(stateObj?.has_won);
+    if (hasWonScreen && viewport && document.activeElement !== viewport) {
+        viewport.focus();
+    }
+}
 
 // Initialize game
 async function init() {
@@ -75,17 +108,8 @@ async function init() {
 
         // On the win screen a tap advances to the next level / restarts. This is the touch
         // equivalent of pressing SPACE, so mobile players (who have no keyboard) can progress.
-        try {
-            if (gameState) {
-                const stateObj = JSON.parse(gameState);
-                if (stateObj && stateObj.has_won) {
-                    gameState = await backend.nextLevel(gameState);
-                    viewport.focus();
-                    return;
-                }
-            }
-        } catch (err) {
-            // Fall through to pointer lock on parse errors.
+        if (await advanceIfWon()) {
+            return;
         }
 
         try {
@@ -369,6 +393,7 @@ async function gameLoop() {
 
         // Update game state in case freeze frame was captured
         gameState = updatedState;
+        syncWinScreenFlag(parseGameState());
 
         // Display frame
         displayFrame(frame);
@@ -443,11 +468,26 @@ function displayFrame(frame) {
             if (gameStateObj.has_won && document.activeElement !== viewport) {
                 viewport.focus();
             }
+            syncWinScreenFlag(gameStateObj);
         } catch (e) {
             // Ignore parse errors
         }
     }
 }
+
+// Win-advance keys: capture on document so Windows receives Space/Enter even if focus drifts.
+document.addEventListener(
+    'keydown',
+    async (e) => {
+        if (paused && e.key !== 'Escape') return;
+        if (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter') return;
+        if (!hasWonScreen) return;
+        e.preventDefault();
+        e.stopPropagation();
+        await advanceIfWon();
+    },
+    true
+);
 
 // Keyboard event handlers - listen on window to catch all keys
 window.addEventListener('keydown', async (e) => {
@@ -456,34 +496,8 @@ window.addEventListener('keydown', async (e) => {
         return;
     }
 
-    // Check if game is won and space is pressed for restart
-    if (e.key === ' ' || e.key === 'Spacebar') {
-        try {
-            // Parse game state
-            let gameStateObj = null;
-            try {
-                gameStateObj = JSON.parse(gameState);
-            } catch (err) {
-                return;
-            }
-            
-            // Only proceed if game is won
-            if (gameStateObj && gameStateObj.has_won) {
-                e.preventDefault();
-                
-                // Advance to next level or restart
-                gameState = await backend.nextLevel(gameState);
-                console.log('Advanced to next level or restarted');
-                
-                // Ensure viewport maintains focus after level transition
-                if (viewport) {
-                    viewport.focus();
-                }
-                return;
-            }
-        } catch (error) {
-            console.error('Error handling spacebar:', error);
-        }
+    if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
+        if (hasWonScreen) return;
     }
     
     switch (e.key.toLowerCase()) {
