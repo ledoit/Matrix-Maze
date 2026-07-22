@@ -2,11 +2,11 @@
 
 Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7). This file mirrors open work for repo readers.
 
-## 1. Windows spacebar on level complete — [MT-45](https://linear.app/menhir-holdings/issue/MT-45) (In Progress)
+## 1. Windows spacebar on level complete — [MT-45](https://linear.app/menhir-holdings/issue/MT-45) (In Review)
 
 Spacebar on Windows fails to advance from level-complete overlay reliably.
 
-**Mitigations shipped:** tap/click on viewport advances when won; `advanceIfWon()` debounce (PR #3).
+**Fix on [PR #5](https://github.com/menhir-holdings/Matrix-Maze/pull/5):** `hasWonScreen` flag synced each frame, document capture listener for Space/Enter, `advanceIfWon()` debounce.
 
 **Notes:** See `SPACEBAR_ISSUES.md`.
 
