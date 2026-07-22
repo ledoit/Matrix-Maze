@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-07-16  
+**As of:** 2026-07-22  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)
 
 ## Shipped
@@ -13,22 +13,23 @@
 - Adaptive music (Kaiser stems + procedural fallback)
 - Vercel deploy; GitHub releases proxy for desktop downloads
 
+## Shipped (recent)
+
+- [MT-102](https://linear.app/menhir-holdings/issue/MT-102) — Unified web at `/`; `/play` + `/dev` retired ([PR #4](https://github.com/menhir-holdings/Matrix-Maze/pull/4) merged)
+- [MT-45](https://linear.app/menhir-holdings/issue/MT-45) — Windows spacebar on level-complete ([PR #5](https://github.com/menhir-holdings/Matrix-Maze/pull/5) merged)
+
 ## In flight
 
 | Issue | What |
 |-------|------|
 | [MT-99](https://linear.app/menhir-holdings/issue/MT-99) | Adaptive music L1–8, level SFX, pause audio — [PR #3](https://github.com/menhir-holdings/Matrix-Maze/pull/3) **In Review** |
-| [MT-45](https://linear.app/menhir-holdings/issue/MT-45) | Windows spacebar on level-complete — [PR #5](https://github.com/menhir-holdings/Matrix-Maze/pull/5) **In Review** |
-
-## Shipped (recent)
-
-- [MT-102](https://linear.app/menhir-holdings/issue/MT-102) — Unified web at `/`; `/play` + `/dev` retired ([PR #4](https://github.com/menhir-holdings/Matrix-Maze/pull/4) merged)
+| [MT-65](https://linear.app/menhir-holdings/issue/MT-65) | Gold-path QA — [PR #6](https://github.com/menhir-holdings/Matrix-Maze/pull/6) **In Review** |
 
 ## Next
 
 | Issue | What |
 |-------|------|
-| [MT-65](https://linear.app/menhir-holdings/issue/MT-65) | Gold-path QA: cold load → all 8 levels in Chrome / Safari / Firefox |
+| — | Manual gold-path sign-off in Chrome / Safari / Firefox ([docs/GOLD_PATH.md](./docs/GOLD_PATH.md)) |
 
 ## Backlog
 

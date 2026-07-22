@@ -10,7 +10,8 @@
     "build:web": "vite build --base=/game/ --outDir ../game --emptyOutDir",
     "preview": "vite preview",
     "tauri": "tauri",
-    "music:sync": "node ./scripts/sync-music-from-kaiser.js --project matrix-maze"
+    "music:sync": "node ./scripts/sync-music-from-kaiser.js --project matrix-maze",
+    "qa:gold-path": "node ./scripts/gold-path-smoke.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0"

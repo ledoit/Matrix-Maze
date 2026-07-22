@@ -35,9 +35,13 @@ Creature spawns behind player, chases at same speed, fail screen on catch, dead-
 
 First-gesture unlock done. Mute UI + persisted preference still open.
 
-## 6. Gold-path browser QA — [MT-65](https://linear.app/menhir-holdings/issue/MT-65) (Todo)
+## 6. Gold-path browser QA — [MT-65](https://linear.app/menhir-holdings/issue/MT-65) (In Progress)
 
 Cold load → Play → complete all **8 levels** → finish run in Chrome, Safari, Firefox without desktop install.
+
+**Automated:** `cargo test gold_path`, `npm run qa:gold-path` — see [docs/GOLD_PATH.md](./docs/GOLD_PATH.md).
+
+**Open:** manual browser matrix sign-off (Chrome / Safari / Firefox).
 
 ## 7. Perf budget — [MT-69](https://linear.app/menhir-holdings/issue/MT-69) (Backlog)
 
