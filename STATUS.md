@@ -18,8 +18,11 @@
 | Issue | What |
 |-------|------|
 | [MT-99](https://linear.app/menhir-holdings/issue/MT-99) | Adaptive music L1–8, level SFX, pause audio — [PR #3](https://github.com/menhir-holdings/Matrix-Maze/pull/3) **In Review** |
-| [MT-102](https://linear.app/menhir-holdings/issue/MT-102) | Unify web at `/`; drop `/play` + `/dev`; fix preview redirect — [PR #4](https://github.com/menhir-holdings/Matrix-Maze/pull/4) |
-| [MT-45](https://linear.app/menhir-holdings/issue/MT-45) | Windows spacebar on level-complete (tap workaround shipped) |
+| [MT-45](https://linear.app/menhir-holdings/issue/MT-45) | Windows spacebar on level-complete — PR pending |
+
+## Shipped (recent)
+
+- [MT-102](https://linear.app/menhir-holdings/issue/MT-102) — Unified web at `/`; `/play` + `/dev` retired ([PR #4](https://github.com/menhir-holdings/Matrix-Maze/pull/4) merged)
 
 ## Next
 
