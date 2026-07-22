@@ -84,7 +84,7 @@ The built application will be in `app/src-tauri/target/release/` (or `app/src-ta
 ├── vercel.json            # Vercel deployment config
 ├── api/                   # Serverless GitHub releases proxy (landing downloads)
 ├── BUILD.md               # Release build checklist
-├── TODO.md                # Open issues (spacebar, creature, remaining audio)
+├── TODO.md                # Open issues (audio polish, mute, perf)
 ├── app/                   # Game application
 │   ├── src/              # Frontend (HTML/CSS/JavaScript)
 │   │   ├── main.js       # Game loop (host-agnostic)
