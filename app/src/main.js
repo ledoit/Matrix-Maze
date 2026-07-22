@@ -261,15 +261,17 @@ async function startPlaying() {
     pausedAt = null;
     paused = false;
     lastFrameTime = performance.now() / 1000.0; // avoid a large delta on the first live frame
+    await music.resume();
     if (viewport) viewport.focus();
     postToShell('playing');
 }
 
 // Pauses play and asks the shell to reveal its sidebar/PLAY overlay again.
-function pauseToShell() {
+async function pauseToShell() {
     if (paused) return;
     paused = true;
     pausedAt = performance.now() / 1000.0;
+    await music.suspend();
     if (document.pointerLockElement) {
         document.exitPointerLock();
     }
@@ -378,6 +380,8 @@ async function gameLoop() {
 
     // Update game state
     try {
+        const wasWonBeforeUpdate = Boolean(gameStateObj?.has_won);
+
         // While paused (embedded landing, pre-PLAY), keep rendering the current frame so the
         // shell shows a live teaser, but don't advance the simulation.
         if (!paused) {
@@ -393,7 +397,12 @@ async function gameLoop() {
 
         // Update game state in case freeze frame was captured
         gameState = updatedState;
-        syncWinScreenFlag(parseGameState());
+
+        const stateAfterUpdate = parseGameState();
+        if (!wasWonBeforeUpdate && stateAfterUpdate?.has_won) {
+            music.playLevelComplete(stateAfterUpdate.current_level || 1);
+        }
+        syncWinScreenFlag(stateAfterUpdate);
 
         // Display frame
         displayFrame(frame);
