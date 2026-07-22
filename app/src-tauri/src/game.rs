@@ -833,3 +833,38 @@ fn get_floor_char(distance: f64, max_distance: f64) -> char {
     }
 }
 
+#[cfg(test)]
+mod gold_path_tests {
+    use super::*;
+
+    #[test]
+    fn advances_through_all_eight_levels_then_restarts() {
+        let mut state = GameState::new();
+        assert_eq!(state.current_level, 1);
+
+        for expected in 1..=8u8 {
+            assert_eq!(state.current_level, expected);
+            state.has_won = true;
+            state.level_completion_time = Some(10.0);
+            state = state.next_level();
+            assert!(!state.has_won);
+        }
+
+        assert_eq!(state.current_level, 1);
+    }
+
+    #[test]
+    fn records_completion_times_between_levels() {
+        let mut state = GameState::new();
+
+        for level in 1..=7u8 {
+            state.has_won = true;
+            state.level_completion_time = Some(level as f64 * 5.0);
+            let next = state.next_level();
+            assert_eq!(next.current_level, level + 1);
+            assert_eq!(next.run_times[level as usize - 1], Some(level as f64 * 5.0));
+            state = next;
+        }
+    }
+}
+
