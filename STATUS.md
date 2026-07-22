@@ -18,7 +18,7 @@
 | Issue | What |
 |-------|------|
 | [MT-99](https://linear.app/menhir-holdings/issue/MT-99) | Adaptive music L1–8, level SFX, pause audio — [PR #3](https://github.com/menhir-holdings/Matrix-Maze/pull/3) **In Review** |
-| [MT-45](https://linear.app/menhir-holdings/issue/MT-45) | Windows spacebar on level-complete — PR pending |
+| [MT-45](https://linear.app/menhir-holdings/issue/MT-45) | Windows spacebar on level-complete — [PR #5](https://github.com/menhir-holdings/Matrix-Maze/pull/5) **In Review** |
 
 ## Shipped (recent)
 
