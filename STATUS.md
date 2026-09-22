@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-09-18  
+**As of:** 2026-09-22  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
 **Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
 **Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
@@ -20,9 +20,9 @@
 - Compact LEVEL START plate, Skip to finish, local handle + hiscores ([MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230))
 - Tab / desktop mark is Bench take **D** (T-junction), not the runner or 32px wordmark
 
-## In review
+## Parked (cut phase)
 
-- Account / monument identity — parked (`docs/identity-parked.md` local only; not this ship)
+- Durable hiscores across sessions — compressed identity, not monument accounts ([MT-240](https://linear.app/menhir-holdings/issue/MT-240)). Do not implement until focus unpauses. Scope: `docs/identity-parked.md`
 
 ## Shell vs WASM
 

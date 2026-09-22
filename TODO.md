@@ -2,9 +2,9 @@
 
 Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7). This file mirrors open work for repo readers.
 
-## In review
+## Parked (do not start until focus unpauses)
 
-- Account / monument identity — parked until a later lock (no-reset, beat-old-score). Not MT-223.
+- [MT-240](https://linear.app/menhir-holdings/issue/MT-240) — durable hiscores across sessions (KV/Blob, not memory on prod). Compressed identity. See `docs/identity-parked.md`.
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
@@ -33,12 +33,12 @@ Define ASCII raycast FPS floor and document WASM bundle size.
 ## Later (cut from MT-223)
 
 - Ghost replay of a recorded input path (`R` today only regenerates the maze)
-- Durable KV/Blob token on the Vercel project if `GET /api/scores` reports `store: "memory"`
 
 ## Canceled
 
 - [MT-46](https://linear.app/menhir-holdings/issue/MT-46) — Creature chase (cut from v1)
 - [MT-71](https://linear.app/menhir-holdings/issue/MT-71) — Creature browser parity (depends on MT-46)
+- Monument / path-walk account (cut 2026-09-22; replaced by MT-240)
 
 ## Triaged
 
