@@ -148,16 +148,16 @@ or frontend changes.
 
 ### Deployment / routes
 
-- **Prod:** https://matrix-maze.menhir-holdings.com/ — sidebar + Play; game embedded
+- **Prod:** https://matrix-maze.koalasalmon.com/ — sidebar + Play; game embedded
 - `/game/` — iframe-only WASM build (not a public entry point)
 - Legacy `/play/` and `/dev/` redirect to `/`
 - Deploy: push `main` → Vercel. In-flight: PR preview URL (do not redirect `*.vercel.app` previews)
 
-Hub ops (DNS / Vercel lattice): [stonehenge docs/DNS.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/DNS.md), [docs/VERCEL.md](https://github.com/menhir-holdings/stonehenge/blob/main/docs/VERCEL.md).
+Hub ops (DNS / Vercel lattice): [stonehenge docs/DNS.md](https://github.com/ledoit/stonehenge/blob/main/docs/DNS.md), [docs/VERCEL.md](https://github.com/ledoit/stonehenge/blob/main/docs/VERCEL.md).
 
 ## Music (Kaiser)
 
-When this repo lives inside the **Menhir** monorepo, adaptive music is produced in `Music/Kaiser/projects/matrix-maze/` and copied into `app/public/audio/music/` by the client sync script.
+Adaptive music is produced in `Audio/Kaiser/composition/projects/matrix-maze/` and copied into `app/public/audio/music/` by the client sync script.
 
 1. Build stems in Kaiser: `Music/Kaiser/export/convert-stems.bat matrix-maze` (or `.sh` on Unix) after placing WAVs in `Music/Kaiser/projects/matrix-maze/export/inbox/`.
 2. From `app/`: `npm run music:sync`

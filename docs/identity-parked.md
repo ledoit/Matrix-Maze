@@ -4,7 +4,7 @@ Cut phase 2026-09-22. **Do not implement until focus unpauses.**
 
 Need: users keep working on hiscores across sessions. That is the whole identity surface for now.
 
-Linear: [MT-240](https://linear.app/menhir-holdings/issue/MT-240/maze-durable-hiscores-across-sessions-compressed)
+Linear: MT-240
 
 ## In
 

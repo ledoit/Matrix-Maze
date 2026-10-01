@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 /**
  * Matrix Maze — sync built music from Kaiser into this app.
- * Source of truth: Menhir/Music/Kaiser/projects/<project-id>/export/out/
+ * Source of truth: Audio/Kaiser/composition/projects/<project-id>/export/out/
  * Reads stem list from that project's project.json.
  */
 import fs from 'node:fs';
