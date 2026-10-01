@@ -2,10 +2,10 @@
 /**
  * Gold-path smoke checks for Matrix Maze production (MT-65).
  * Usage: node scripts/gold-path-smoke.mjs
- * Env: GOLD_PATH_URL (default https://matrix-maze.menhir-holdings.com)
+ * Env: GOLD_PATH_URL (default https://matrix-maze.koalasalmon.com)
  */
 
-const base = (process.env.GOLD_PATH_URL || 'https://matrix-maze.menhir-holdings.com').replace(/\/$/, '');
+const base = (process.env.GOLD_PATH_URL || 'https://matrix-maze.koalasalmon.com').replace(/\/$/, '');
 
 async function fetchText(path) {
   const url = `${base}${path}`;

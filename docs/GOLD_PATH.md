@@ -1,6 +1,6 @@
 # Gold-path QA — Matrix Maze
 
-**Linear:** [MT-65](https://linear.app/menhir-holdings/issue/MT-65)
+**Linear:** MT-65
 
 Cold load → **Play** → complete all **8 levels** → finish run summary, without a desktop install.
 
@@ -17,7 +17,7 @@ On Windows, set `CARGO_TARGET_DIR` to a path **without spaces** if the repo live
 - **Rust tests** — `GameState::next_level()` advances 1→8 then restarts; run times persist between levels.
 - **Smoke script** — production landing (`/`), embedded game shell (`/game/`), WASM bundle, and level-1 HUD text.
 
-Default smoke target: `https://matrix-maze.menhir-holdings.com`. Override with `GOLD_PATH_URL`.
+Default smoke target: `https://matrix-maze.koalasalmon.com`. Override with `GOLD_PATH_URL`.
 
 ## Manual browser matrix
 
@@ -40,4 +40,4 @@ Run once per browser after a hard refresh (empty cache). Production URL unless t
 
 - Audio may require a first user gesture; unmute OS/browser if stems are silent.
 - Best times persist in `localStorage`; clear site data for a fully fresh run.
-- Windows spacebar quirks tracked in [MT-45](https://linear.app/menhir-holdings/issue/MT-45); tap/click fallback should still advance.
+- Windows spacebar quirks tracked in MT-45; tap/click fallback should still advance.
